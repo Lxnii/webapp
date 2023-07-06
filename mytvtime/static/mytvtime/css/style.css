@@ -51,9 +51,14 @@ body {
     left: 30px;
     font-size: 18px;
 }
+.watching-show-list-container {
+    text-align: center;
+
+}
 .watching-show-list {
     list-style: none;
     padding: 0;
+    display: inline-block;
     text-align: center;
 }
 
@@ -62,6 +67,5 @@ body {
     padding: 10px;
     border: 1px solid #ccc;
     width: 300px;
-    display: inline-block;
     vertical-align: top;
 }
