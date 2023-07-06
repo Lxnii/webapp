@@ -1,0 +1,67 @@
+.h1-home {
+    text-align: center; 
+}
+body {
+    position: relative;
+}
+
+.user-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 10px;
+}
+
+.user-actions a {
+    margin-left: 10px;
+}
+
+.search-results h2 {
+    text-align: center; 
+}
+.search-box {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.search-box input[type="text"] {
+    width: 30%;
+    height: 25px;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.search-box button {
+    height: 25px;
+    font-size: 16px;
+    padding: 22.5px 20px;
+    line-height: 0;
+    margin: 0 5px;
+}
+
+.search-results ul {
+    text-align: center;
+    list-style-type: none;
+}
+
+.search-back-button {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    font-size: 18px;
+}
+.watching-show-list {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+}
+
+.watching-show-item {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    width: 300px;
+    display: inline-block;
+    vertical-align: top;
+}

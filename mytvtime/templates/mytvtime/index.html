@@ -1,0 +1,55 @@
+<!-- index.html -->
+{% load static %} 
+
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script> -->
+
+    <title>My TV Time</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
+
+</head>
+<body>
+    <h1 class="h1-home">My TV Time</h1>
+    <div class="user-actions">
+        {% if request.user.is_authenticated %}
+            <span>Welcome, {{ request.user.username }}!</span>
+            <a href="{% url 'mytvtime:logout' %}">Logout</a>
+        {% else %}
+            <a href="{% url 'mytvtime:login' %}">Login</a>
+            <a href="{% url 'mytvtime:register' %}">Register</a>
+        {% endif %}
+    </div>
+    <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="search_query" placeholder="Seach for a TV show">
+        <button type="submit">Search</button>
+    </form>
+    
+    {% if request.user.is_authenticated %}
+    <h2>Watching Shows:</h2>
+    <ul class="watching-show-list">
+        {% for show in watching_shows %}
+            <li class="watching-show-item">
+                <h3>{{ show.title }}</h3>
+                {% if show.season and show.episode %}
+                    <p>Season: {{ show.season }} Episode: {{ show.episode }}</p>
+                    {% if show.days is not None and show.hours is not None %}
+                        <p>Next episode in: {{ show.days }} days, {{ show.hours }} hours</p>
+                    {% endif %}
+                {% else %}
+                    <p>Status: {{ show.status }}</p>
+                {% endif %}
+            </li>
+        {% empty %}
+            <p>You are not watching any shows.</p>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>You must be logged in to see your list of shows. <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
+    {% endif %}
+</body>
+</html>
