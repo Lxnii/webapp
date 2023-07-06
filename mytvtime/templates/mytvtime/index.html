@@ -31,23 +31,26 @@
     
     {% if request.user.is_authenticated %}
     <h2>Watching Shows:</h2>
-    <ul class="watching-show-list">
-        {% for show in watching_shows %}
-            <li class="watching-show-item">
-                <h3>{{ show.title }}</h3>
-                {% if show.season and show.episode %}
-                    <p>Season: {{ show.season }} Episode: {{ show.episode }}</p>
-                    {% if show.days is not None and show.hours is not None %}
-                        <p>Next episode in: {{ show.days }} days, {{ show.hours }} hours</p>
+    <div class="watching-show-list-container">
+        <ul class="watching-show-list">
+            {% for show in watching_shows %}
+                <li class="watching-show-item">
+                    <h3>{{ show.title }}</h3>
+                    {% if show.season and show.episode %}
+                        <p>Season: {{ show.season }} Episode: {{ show.episode }}</p>
+                        {% if show.days is not None and show.hours is not None %}
+                            <p>Next episode in: {{ show.days }} days, {{ show.hours }} hours</p>
+                        {% endif %}
+                    {% else %}
+                        <p>Status: {{ show.status }}</p>
                     {% endif %}
-                {% else %}
-                    <p>Status: {{ show.status }}</p>
-                {% endif %}
-            </li>
-        {% empty %}
-            <p>You are not watching any shows.</p>
-        {% endfor %}
-    </ul>
+                </li>
+            {% empty %}
+                <p>You are not watching any shows.</p>
+            {% endfor %}
+        </ul>        
+    </div>
+
     {% else %}
     <p>You must be logged in to see your list of shows. <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
     {% endif %}
