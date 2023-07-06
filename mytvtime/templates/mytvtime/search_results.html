@@ -1,0 +1,36 @@
+<!-- search_results.html -->
+{% load static %} 
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
+    <title>Show Search Results</title>
+</head>
+<body>
+    <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="search_query" placeholder="Enter search keyword">
+        <button type="submit">Search</button>
+    </form>
+    <div class="search-results">
+        <h2>Search Results for "{{ search_query }}"</h2>
+        <ul>
+            {% for result in search_results %}
+                <li>
+                    <strong>{{ result.show.title }}
+                        {{ result.show.year }}
+                        Trakt ID: {{ result.show.ids.trakt }}
+                    </strong>
+                    <p>{{ result.show.status }}</p>
+                    <a href="{% url 'mytvtime:add_to_watchlist' result.show.ids.trakt %}">Add to Watchlist</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Back to home page -->
+    <a class="search-back-button" href="/mytvtime">Back to Home</a> 
+
+</body>
+</html>
