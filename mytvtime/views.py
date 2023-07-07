@@ -1,5 +1,6 @@
 import os
 import requests
+import json
 from datetime import datetime, timedelta, timezone
 from dateutil.parser import isoparse
 from django.shortcuts import render, redirect
@@ -198,7 +199,6 @@ def add_to_watchlist(request, trakt_id):
     # Redirect the user back to the home page
     return redirect('mytvtime:index')
 
-
 def get_watching_shows(request):
     if request.user.is_authenticated:
         user_id = request.user.id
@@ -226,19 +226,35 @@ def get_watching_shows(request):
                 if days < 0 or hours < 0:
                     days = 0
                     hours = 0
-
             watching_show = {
                 'title': show_details.get('title'),
+                'ids': show_details.get('ids'),
                 'season': next_episode.get('season') if next_episode else None,
                 'episode': next_episode.get('number') if next_episode else None,
                 'days': days,
                 'hours': hours,
-                'status': show_details.get('status'),
+                'status': show_details.get('status').capitalize(),
             }
-
             watching_shows.append(watching_show)
         return JsonResponse(watching_shows, safe=False)
     else:
         # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
         return JsonResponse({"unauthenticated": True})
 
+@login_required
+def remove_from_watchlist(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        trakt_id = data.get('trakt_id', None)
+        if trakt_id is not None:
+            # Get the Show object based on the Trakt ID
+            show = Show.objects.get(trakt_id=trakt_id)
+
+            # Remove the Watchlist entry for the current user and the selected show
+            Watchlist.objects.filter(user=request.user, show=show).delete()
+
+            return JsonResponse({"status": "success"})
+        else:
+            return JsonResponse({"status": "error", "message": "Trakt ID not provided"})
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid request method"})
