@@ -12,8 +12,8 @@ from django.http import JsonResponse
 from configparser import ConfigParser
 from .models import Show, Watchlist
 # Create your views here.
-# def index(request):
-#     return render(request, "mytvtime/index.html")
+def index(request):
+    return render(request, 'ytvtime/index.html')
 
 def get_api_key(api_name):
     config = ConfigParser()
@@ -57,7 +57,7 @@ def logout(request):
     django_logout(request)
     return redirect('mytvtime:index')
 
-def index(request):
+# def index(request):
     # watching_shows = []
     # if request.user.is_authenticated:
     #     user = request.user.id
@@ -96,7 +96,7 @@ def index(request):
 
     #         watching_shows.append(watching_show)
 
-    return render(request, 'mytvtime/index.html')
+    # return render(request, 'mytvtime/index.html')
 
 def search_shows_on_trakt(query):
     # Set Trakt API parameters
