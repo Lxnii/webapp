@@ -101,18 +101,23 @@
                     } else {
                         return (
                             <div className="watching-show-list-container">
-                                {this.state.watchingShows.map(show =>
-                                    <ul className="watching-show-list" key={show.title}>
-                                        <li className="watching-show-item">
-                                            <h3>{show.title}</h3>
-                                            <p>Season: {show.season}</p>
-                                            <p>Episode: {show.episode}</p>
-                                            <p>Days until next episode: {show.days}</p>
-                                            <p>Hours until next episode: {show.hours}</p>
-                                            <p>Status: {show.status}</p>
+                                <ul className="watching-show-list">
+                                    {this.state.watchingShows.map(show =>
+                                        <li key={show.title} className="watching-show-item">
+                                            <h2>{show.title}</h2>
+                                            {show.days != null && show.hours != null ? (
+                                                <div>
+                                                    <p>Season: {show.season}</p>
+                                                    <p>Episode: {show.episode}</p>
+                                                    <p>Days until next episode: {show.days}</p>
+                                                    <p>Hours until next episode: {show.hours}</p>
+                                                </div>
+                                            ) : (
+                                                <p>Status: {show.status}</p>
+                                            )}
                                         </li>
-                                    </ul>
-                                )}
+                                    )}
+                                </ul>
                             </div>
                         );
                     }
