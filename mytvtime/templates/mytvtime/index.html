@@ -3,56 +3,110 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-    <!-- <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script> -->
+    <head>
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-    <title>My TV Time</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
+        <title>My TV Time</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
 
-</head>
-<body>
-    <h1 class="h1-home">My TV Time</h1>
-    <div class="user-actions">
-        {% if request.user.is_authenticated %}
-            <span>Welcome, {{ request.user.username }}!</span>
-            <a href="{% url 'mytvtime:logout' %}">Logout</a>
-        {% else %}
-            <a href="{% url 'mytvtime:login' %}">Login</a>
-            <a href="{% url 'mytvtime:register' %}">Register</a>
-        {% endif %}
-    </div>
-    <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
-        {% csrf_token %}
-        <input type="text" name="search_query" placeholder="Seach for a TV show">
-        <button type="submit">Search</button>
-    </form>
-    
-    {% if request.user.is_authenticated %}
-    <h2>Watching Shows:</h2>
-    <div class="watching-show-list-container">
-        <ul class="watching-show-list">
-            {% for show in watching_shows %}
-                <li class="watching-show-item">
-                    <h3>{{ show.title }}</h3>
-                    {% if show.season and show.episode %}
-                        <p>Season: {{ show.season }} Episode: {{ show.episode }}</p>
-                        {% if show.days is not None and show.hours is not None %}
-                            <p>Next episode in: {{ show.days }} days, {{ show.hours }} hours</p>
-                        {% endif %}
-                    {% else %}
-                        <p>Status: {{ show.status }}</p>
-                    {% endif %}
-                </li>
-            {% empty %}
-                <p>You are not watching any shows.</p>
-            {% endfor %}
-        </ul>        
-    </div>
+    </head>
+    <body>
+        <h1 class="h1-home">My TV Time</h1>
+        <div class="user-actions">
+            {% if request.user.is_authenticated %}
+                <span>Welcome, {{ request.user.username }}!</span>
+                <a href="{% url 'mytvtime:logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'mytvtime:login' %}">Login</a>
+                <a href="{% url 'mytvtime:register' %}">Register</a>
+            {% endif %}
+        </div>
+        <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="search_query" placeholder="Seach for a TV show">
+            <button type="submit">Search</button>
+        </form>
+        
+        <div id="root"></div>
+        <script type="text/babel">
+            class WatchingShows extends React.Component {
+                constructor(props) {
+                    super(props);
+                    this.state = {
+                        watchingShows: [],
+                        isLoading: true,
+                        isAuthenticated: true,
+                    };
+                }
+                componentDidMount() {
+                    axios.get('/mytvtime/api/get_shows/')
+                        .then(res => {
+                            if (res.data.unauthenticated) {
+                                // If the user is not authenticated, set isAuthenticated to false
+                                this.setState({
+                                    isLoading: false,
+                                    isAuthenticated: false,
+                                });
+                            } else {
+                                // Sort the shows by the date of the next episode.
+                                const watchingShows = res.data.sort((a, b) => {
+                                const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
+                                const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
 
-    {% else %}
-    <p>You must be logged in to see your list of shows. <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
-    {% endif %}
-</body>
+                                // Use Infinity as a placeholder for shows with no next episode info
+                                return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
+                                });
+                                this.setState({
+                                    watchingShows,
+                                    isLoading: false,
+                                });
+                            }
+                        });
+                }
+
+                render() {
+                    if (this.state.isLoading) {
+                        return (
+                            <div>
+                                <p>Loading...</p>
+                            </div>
+                        );
+                    } else if (!this.state.isAuthenticated) {
+                        // If user is not authenticated, display a message prompting to log in.
+                        return (
+                            <div>
+                                <p>You must be logged in to see your list of shows. 
+                                <a href="/mytvtime/login">Log in</a> or <a href="/mytvtime/register">register</a> now.</p>
+                            </div>
+                        );
+                    } else {
+                        return (
+                            <div className="watching-show-list-container">
+                                {this.state.watchingShows.map(show =>
+                                    <ul className="watching-show-list" key={show.title}>
+                                        <li className="watching-show-item">
+                                            <h3>{show.title}</h3>
+                                            <p>Season: {show.season}</p>
+                                            <p>Episode: {show.episode}</p>
+                                            <p>Days until next episode: {show.days}</p>
+                                            <p>Hours until next episode: {show.hours}</p>
+                                            <p>Status: {show.status}</p>
+                                        </li>
+                                    </ul>
+                                )}
+                            </div>
+                        );
+                    }
+                }
+            }
+            
+            ReactDOM.render(
+                <WatchingShows />,
+                document.getElementById('root')
+            );
+        </script>
+    </body>
 </html>
