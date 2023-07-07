@@ -13,7 +13,7 @@ from configparser import ConfigParser
 from .models import Show, Watchlist
 # Create your views here.
 def index(request):
-    return render(request, 'ytvtime/index.html')
+    return render(request, 'mytvtime/index.html')
 
 def get_api_key(api_name):
     config = ConfigParser()
