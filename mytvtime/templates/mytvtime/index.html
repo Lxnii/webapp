@@ -42,31 +42,47 @@
                     };
                 }
                 componentDidMount() {
-                    axios.get('/mytvtime/api/get_shows/')
-                        .then(res => {
-                            if (res.data.unauthenticated) {
-                                // If the user is not authenticated, set isAuthenticated to false
-                                this.setState({
-                                    isLoading: false,
-                                    isAuthenticated: false,
-                                });
-                            } else {
-                                // Sort the shows by the date of the next episode.
-                                const watchingShows = res.data.sort((a, b) => {
-                                const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
-                                const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
-
-                                // Use Infinity as a placeholder for shows with no next episode info
-                                return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
-                                });
-                                this.setState({
-                                    watchingShows,
-                                    isLoading: false,
-                                });
-                            }
+                    // Send GET request when component mounts.
+                    const savedData = JSON.parse(localStorage.getItem('watchingShowsData'));
+                    const savedTime = localStorage.getItem('watchingShowsTime');
+                    const currentTime = new Date().getTime();
+                    const oneHour = 60 * 60 * 1000; // One hour in milliseconds
+                    // Use the saved data if it's less than an hour old
+                    if (savedData && savedTime && currentTime - savedTime < oneHour) {
+                        this.setState({
+                            watchingShows: savedData,
+                            isLoading: false,
                         });
-                }
+                    } else {
+                        // Otherwise, fetch new data from the server
+                        axios.get('/mytvtime/api/get_shows/')
+                            .then(res => {
+                                if (res.data.unauthenticated) {
+                                    this.setState({
+                                        isLoading: false,
+                                        isAuthenticated: false,
+                                    });
+                                } else {
+                                    // Sort the shows by the days and hours until the next episode.
+                                    const watchingShows = res.data.sort((a, b) => {
+                                        const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
+                                        const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
+                                        // Use Infinity as a placeholder for shows with no next episode info
+                                        return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
+                                    });
 
+                                    this.setState({
+                                        watchingShows,
+                                        isLoading: false,
+                                    });
+
+                                    // Save the new data and the current time
+                                    localStorage.setItem('watchingShowsData', JSON.stringify(watchingShows));
+                                    localStorage.setItem('watchingShowsTime', currentTime.toString());
+                                }
+                            });
+                    }
+                }
                 render() {
                     if (this.state.isLoading) {
                         return (
