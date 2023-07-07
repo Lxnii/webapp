@@ -56,16 +56,15 @@ body {
 
 }
 .watching-show-list {
-    list-style: none;
+    list-style-type: none;
+    margin: 0;
     padding: 0;
-    display: inline-block;
-    text-align: center;
 }
 
 .watching-show-item {
-    margin: 10px;
+    background-color: #f2f2f2;
+    border: 1px solid #ddd;
+    margin: 10px 0;
     padding: 10px;
-    border: 1px solid #ccc;
-    width: 300px;
-    vertical-align: top;
+    text-align: center;
 }
