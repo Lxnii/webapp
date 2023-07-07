@@ -11,4 +11,5 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
     path('api/get_shows/', views.get_watching_shows),
+    path('remove_from_watchlist/', views.remove_from_watchlist, name='remove_from_watchlist'),
 ]
