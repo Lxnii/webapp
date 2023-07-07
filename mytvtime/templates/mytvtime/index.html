@@ -18,7 +18,7 @@
         <div class="user-actions">
             {% if request.user.is_authenticated %}
                 <span>Welcome, {{ request.user.username }}!</span>
-                <a href="{% url 'mytvtime:logout' %}">Logout</a>
+                <a href="javascript:void(0);" onclick="handleLogout()">Logout</a>
             {% else %}
                 <a href="{% url 'mytvtime:login' %}">Login</a>
                 <a href="{% url 'mytvtime:register' %}">Register</a>
@@ -31,6 +31,14 @@
         </form>
         
         <div id="root"></div>
+        <script>
+            function handleLogout() {
+                sessionStorage.removeItem("shows");
+                localStorage.removeItem('watchingShowsData');
+                localStorage.removeItem('watchingShowsTime');
+                window.location.href = "{% url 'mytvtime:logout' %}";
+            }
+        </script>        
         <script type="text/babel">
             class WatchingShows extends React.Component {
                 constructor(props) {
@@ -41,6 +49,7 @@
                         isAuthenticated: true,
                     };
                 }
+
                 componentDidMount() {
                     // Send GET request when component mounts.
                     const savedData = JSON.parse(localStorage.getItem('watchingShowsData'));

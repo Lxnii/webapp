@@ -4,6 +4,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
     <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
     <title>Show Search Results</title>
 </head>
@@ -22,6 +27,8 @@
         <input type="text" name="search_query" placeholder="Enter search keyword">
         <button type="submit">Search</button>
     </form>
+
+    </script>
     <div class="search-results">
         <h2>Search Results for "{{ search_query }}"</h2>
         <ul>
