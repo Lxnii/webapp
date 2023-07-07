@@ -7,7 +7,8 @@ from django.contrib.auth import authenticate, login as django_login, logout as d
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.http import JsonResponse
+
 from configparser import ConfigParser
 from .models import Show, Watchlist
 # Create your views here.
@@ -57,45 +58,45 @@ def logout(request):
     return redirect('mytvtime:index')
 
 def index(request):
-    watching_shows = []
-    if request.user.is_authenticated:
-        user = request.user.id
-        user_watchlist = Watchlist.objects.filter(user=user)
-        for watchlist_item in user_watchlist:
-            show_id = watchlist_item.show.trakt_id  # Extract trakt_id from the show attribute of the Watchlist object
-            show_details = get_show_details_from_trakt(show_id)
-            if show_details is None:  # Add this check
-                continue
+    # watching_shows = []
+    # if request.user.is_authenticated:
+    #     user = request.user.id
+    #     user_watchlist = Watchlist.objects.filter(user=user)
+    #     for watchlist_item in user_watchlist:
+    #         show_id = watchlist_item.show.trakt_id  # Extract trakt_id from the show attribute of the Watchlist object
+    #         show_details = get_show_details_from_trakt(show_id)
+    #         if show_details is None:  # Add this check
+    #             continue
 
-            # Calculate the days and hours until the next episode
-            next_episode = show_details.get('next_episode')
-            next_episode_time = None
-            days = None
-            hours = None
-            if next_episode is not None:  # And this check
-                next_episode_time = isoparse(next_episode.get('first_aired')) # now includes timezone information
-                now = datetime.now(timezone.utc)  # Corrected here
-                time_delta = next_episode_time - now
-                days = time_delta.days
-                hours = time_delta.seconds // 3600
+    #         # Calculate the days and hours until the next episode
+    #         next_episode = show_details.get('next_episode')
+    #         next_episode_time = None
+    #         days = None
+    #         hours = None
+    #         if next_episode is not None:  # And this check
+    #             next_episode_time = isoparse(next_episode.get('first_aired')) # now includes timezone information
+    #             now = datetime.now(timezone.utc)  # Corrected here
+    #             time_delta = next_episode_time - now
+    #             days = time_delta.days
+    #             hours = time_delta.seconds // 3600
 
-                # Adjustment for negative values of days and hours
-                if days < 0 or hours < 0:
-                    days = 0
-                    hours = 0
+    #             # Adjustment for negative values of days and hours
+    #             if days < 0 or hours < 0:
+    #                 days = 0
+    #                 hours = 0
 
-            watching_show = {
-                'title': show_details.get('title'),
-                'season': next_episode.get('season') if next_episode else None,  # And check here
-                'episode': next_episode.get('number') if next_episode else None,  # And here
-                'days': days,
-                'hours': hours,
-                'status': show_details.get('status'),
-            }
+    #         watching_show = {
+    #             'title': show_details.get('title'),
+    #             'season': next_episode.get('season') if next_episode else None,  # And check here
+    #             'episode': next_episode.get('number') if next_episode else None,  # And here
+    #             'days': days,
+    #             'hours': hours,
+    #             'status': show_details.get('status'),
+    #         }
 
-            watching_shows.append(watching_show)
+    #         watching_shows.append(watching_show)
 
-    return render(request, 'mytvtime/index.html', {'watching_shows': watching_shows})
+    return render(request, 'mytvtime/index.html')
 
 def search_shows_on_trakt(query):
     # Set Trakt API parameters
@@ -197,4 +198,47 @@ def add_to_watchlist(request, trakt_id):
     # Redirect the user back to the home page
     return redirect('mytvtime:index')
 
+
+def get_watching_shows(request):
+    if request.user.is_authenticated:
+        user_id = request.user.id
+        watching_shows = []
+        user_watchlist = Watchlist.objects.filter(user=user_id)
+        for watchlist_item in user_watchlist:
+            show_id = watchlist_item.show.trakt_id
+            show_details = get_show_details_from_trakt(show_id)
+            if show_details is None:
+                continue
+
+            # Calculate the days and hours until the next episode
+            next_episode = show_details.get('next_episode')
+            next_episode_time = None
+            days = None
+            hours = None
+            if next_episode is not None:  # And this check
+                next_episode_time = isoparse(next_episode.get('first_aired')) # now includes timezone information
+                now = datetime.now(timezone.utc)  # Corrected here
+                time_delta = next_episode_time - now
+                days = time_delta.days
+                hours = time_delta.seconds // 3600
+
+                # Adjustment for negative values of days and hours
+                if days < 0 or hours < 0:
+                    days = 0
+                    hours = 0
+
+            watching_show = {
+                'title': show_details.get('title'),
+                'season': next_episode.get('season') if next_episode else None,
+                'episode': next_episode.get('number') if next_episode else None,
+                'days': days,
+                'hours': hours,
+                'status': show_details.get('status'),
+            }
+
+            watching_shows.append(watching_show)
+        return JsonResponse(watching_shows, safe=False)
+    else:
+        # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
+        return JsonResponse({"unauthenticated": True})
 
