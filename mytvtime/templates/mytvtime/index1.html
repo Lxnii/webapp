@@ -11,6 +11,7 @@
 
         <title>My TV Time</title>
         <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
+
     </head>
     <body>
         <h1 class="h1-home">My TV Time</h1>
@@ -23,13 +24,12 @@
                 <a href="{% url 'mytvtime:register' %}">Register</a>
             {% endif %}
         </div>
-        <div id="auth-status" style="display: none;">{% if request.user.is_authenticated %}true{% else %}false{% endif %}</div>
         <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
             {% csrf_token %}
             <input type="text" name="search_query" placeholder="Seach for a TV show">
             <button type="submit">Search</button>
         </form>
-
+        
         <div id="root"></div>
         <script>
             function handleLogout() {
@@ -38,45 +38,60 @@
                 localStorage.removeItem('watchingShowsTime');
                 window.location.href = "{% url 'mytvtime:logout' %}";
             }
-        </script> 
+        </script>    
         <script type="text/babel">
             class WatchingShows extends React.Component {
                 constructor(props) {
                     super(props);
                     this.state = {
                         watchingShows: [],
-                        isLoading: false,
-                        isAuthenticated: false,
+                        isLoading: true,
+                        isAuthenticated: true,
                     };
                 }
-
                 componentDidMount() {
-                    axios.get('/mytvtime/get_watching_shows/')
-                        .then(res => {
-                            if (res.data.unauthenticated) {
-                                this.setState({
-                                    isLoading: false,
-                                    isAuthenticated: false,
-                                });
-                            } else {
-                                const watchingShows = res.data.watching_shows.sort((a, b) => {
-                                    const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
-                                    const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
-                                    return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
-                                });
-
-                                this.setState({
-                                    watchingShows,
-                                    isLoading: false,
-                                    isAuthenticated: true,
-                                });
-
-                                localStorage.setItem('watchingShowsData', JSON.stringify(watchingShows));
-                                localStorage.setItem('watchingShowsTime', new Date().getTime().toString());
-                            }
+                    // Send GET request when component mounts.
+                    const savedData = JSON.parse(localStorage.getItem('watchingShowsData'));
+                    const savedTime = localStorage.getItem('watchingShowsTime');
+                    const currentTime = new Date().getTime();
+                    const oneHour = 60 * 60 * 1000; // One hour in milliseconds
+                    // Use the saved data if it's less than an hour old
+                    if (savedData && savedTime && currentTime - savedTime < oneHour) {
+                        this.setState({
+                            watchingShows: savedData,
+                            isLoading: false,
                         });
-                }
+                    } else {
+                        // Otherwise, fetch new data from the server
+                        axios.get('/mytvtime/get_watching_shows/')
+                            .then(res => {
+                                if (res.data.unauthenticated) {
+                                    this.setState({
+                                        isLoading: false,
+                                        isAuthenticated: false,
+                                    });
+                                } else {
+                                    // Sort the shows by the days and hours until the next episode.
+                                    const watchingShows = res.data.watching_shows.sort((a, b) => {
+                                        const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
+                                        const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
+                                        // Use Infinity as a placeholder for shows with no next episode info
+                                        return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
+                                    });
 
+                                    this.setState({
+                                        watchingShows,
+                                        isLoading: false,
+                                    });
+
+                                    // Save the new data and the current time
+                                    localStorage.setItem('watchingShowsData', JSON.stringify(watchingShows));
+                                    localStorage.setItem('watchingShowsTime', currentTime.toString());
+                                }
+                            
+                            });
+                    }
+                }
                 handleDelete(id) {
                     // Get CSRF token
                     let csrftoken = getCookie('csrftoken');
@@ -107,29 +122,29 @@
                             this.setState(prevState => ({
                                 watchingShows: prevState.watchingShows.filter(show => show.trakt !== id)
                             }), () => {
+                                const currentTime = new Date().getTime();
                                 localStorage.setItem('watchingShowsData', JSON.stringify(this.state.watchingShows));
+                                localStorage.setItem('watchingShowsTime', currentTime.toString()); // 新增这一行
                             });
                         } else {
                             alert('Could not delete show');
                         }
                     });
                 }
-
+                
                 render() {
-                    if (!this.state.isAuthenticated) {
-                        return (
-                            <div>
-                                <p>You must be logged in to see your list of shows. 
-                                <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
-                            </div>
-                        );
-                    }
-
-                    // Previous render logic for authenticated users...
                     if (this.state.isLoading) {
                         return (
                             <div>
                                 <p>Loading...</p>
+                            </div>
+                        );
+                    } else if (!this.state.isAuthenticated) {
+                        // If user is not authenticated, display a message prompting to log in.
+                        return (
+                            <div>
+                                <p>You must be logged in to see your list of shows. 
+                                <a href="/mytvtime/login">Log in</a> or <a href="/mytvtime/register">register</a> now.</p>
                             </div>
                         );
                     } else {
@@ -142,12 +157,12 @@
                                             {show.days != null && show.hours != null ? (
                                                 <div>
                                                     <p>Season: {show.season} Episode: {show.episode}</p>
-                                                    <p>Airs in {show.days} days {show.hours} hours {show.minutes} minutes</p>
+                                                    <p>Airs in {show.days} days {show.hours} hours</p>
                                                 </div>
                                             ) : (
                                                 <p>{show.status}</p>
                                             )}
-                                            <button className="delete-button"onClick={() => this.handleDelete(show.trakt)}>Delete</button>
+                                            <button className="delete-button"onClick={() => this.handleDelete(show.ids.trakt)}>Delete</button>
                                         </li>
                                     )}
                                 </ul>
@@ -156,12 +171,11 @@
                     }
                 }
             }
-
+            
             ReactDOM.render(
                 <WatchingShows />,
                 document.getElementById('root')
             );
         </script>
-        
     </body>
 </html>
