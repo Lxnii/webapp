@@ -148,7 +148,7 @@
                                     {this.state.watchingShows.map(show =>
                                         <li key={show.title} className="watching-show-item">
                                             <h2>{show.title}</h2>
-                                            {show.days != null && show.hours != null ? (
+                                            {show.days != null && show.hours != null && show.minutes != null ? (
                                                 <div>
                                                     <p>Season: {show.season} Episode: {show.episode}</p>
                                                     <p>Airs in {show.days} days {show.hours} hours {show.minutes} minutes</p>
@@ -157,7 +157,6 @@
                                                 <div>
                                                 <p>{show.status}</p>
                                                 </div>
-                                                
                                             )}
                                             <button className="delete-button"onClick={() => this.handleDelete(show.trakt)}>Delete</button>
                                         </li>
