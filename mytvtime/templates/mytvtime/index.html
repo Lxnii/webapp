@@ -49,8 +49,10 @@
                         isAuthenticated: false,
                     };
                 }
-
                 componentDidMount() {
+                    // Set isLoading to true right before the async call
+                    this.setState({ isLoading: true });
+
                     axios.get('/mytvtime/get_watching_shows/')
                         .then(res => {
                             if (res.data.unauthenticated) {
@@ -59,11 +61,11 @@
                                     isAuthenticated: false,
                                 });
                             } else {
-                                const watchingShows = res.data.watching_shows.sort((a, b) => {
+                                const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
                                     const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
                                     const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
                                     return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
-                                });
+                                }) : [];
 
                                 this.setState({
                                     watchingShows,
@@ -74,7 +76,15 @@
                                 localStorage.setItem('watchingShowsData', JSON.stringify(watchingShows));
                                 localStorage.setItem('watchingShowsTime', new Date().getTime().toString());
                             }
+                        })
+                        .catch(error => {
+                        // Handle the error here
+                        console.error(error);
+                        this.setState({
+                            isLoading: false,
+                            hasError: true,  // Add a new state variable to store the error state
                         });
+                    });
                 }
 
                 handleDelete(id) {
@@ -116,23 +126,33 @@
                 }
 
                 render() {
-                    if (!this.state.isAuthenticated) {
-                        return (
-                            <div>
-                                <p>You must be logged in to see your list of shows. 
-                                <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
-                            </div>
-                        );
-                    }
-
-                    // Previous render logic for authenticated users...
+                     // When data is still loading
                     if (this.state.isLoading) {
                         return (
                             <div>
                                 <p>Loading...</p>
                             </div>
                         );
-                    } else {
+                    } 
+                    // When an error has occurred
+                    if (this.state.hasError) {
+                        return (
+                            <div>
+                                <p>Oops, something went wrong...</p>
+                            </div>
+                        );
+                    }                                    
+                    // When user is not authenticated
+                    if (this.state.isAuthenticated === false) {
+                        return (
+                            <div>
+                                <p>You must be logged in to see your list of shows. 
+                                <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
+                            </div>
+                        );
+                    }                      
+
+                    if (this.state.isAuthenticated) {
                         return (
                             <div className="watching-show-list-container">
                                 <ul className="watching-show-list">
