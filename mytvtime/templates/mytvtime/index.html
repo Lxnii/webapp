@@ -45,50 +45,48 @@
                     super(props);
                     this.state = {
                         watchingShows: [],
-                        isLoading: false,
+                        isLoading: true,
                         isAuthenticated: false,
                     };
                 }
+
                 componentDidMount() {
-                    // Set isLoading to true right before the async call
-                    this.setState({ isLoading: true });
+                    const authStatusElement = document.getElementById('auth-status');
+                    const isAuthenticated = authStatusElement.textContent === 'true';
+
+                    this.setState({ isAuthenticated: isAuthenticated });
+
+                    if (!isAuthenticated) {
+                        this.setState({ isLoading: false });
+                        return;
+                    }
 
                     axios.get('/mytvtime/get_watching_shows/')
                         .then(res => {
-                            if (res.data.unauthenticated) {
-                                this.setState({
-                                    isLoading: false,
-                                    isAuthenticated: false,
-                                });
-                            } else {
-                                const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
-                                    const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
-                                    const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
-                                    return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
-                                }) : [];
+                            const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
+                                const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
+                                const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
+                                return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
+                            }) : [];
 
-                                this.setState({
-                                    watchingShows,
-                                    isLoading: false,
-                                    isAuthenticated: true,
-                                });
+                            this.setState({
+                                watchingShows,
+                                isLoading: false,
+                            });
 
-                                localStorage.setItem('watchingShowsData', JSON.stringify(watchingShows));
-                                localStorage.setItem('watchingShowsTime', new Date().getTime().toString());
-                            }
+                            localStorage.setItem('watchingShowsData', JSON.stringify(watchingShows));
+                            localStorage.setItem('watchingShowsTime', new Date().getTime().toString());
                         })
                         .catch(error => {
-                        // Handle the error here
-                        console.error(error);
-                        this.setState({
-                            isLoading: false,
-                            hasError: true,  // Add a new state variable to store the error state
+                            console.error(error);
+                            this.setState({
+                                isLoading: false,
+                                hasError: true,
+                            });
                         });
-                    });
                 }
 
                 handleDelete(id) {
-                    // Get CSRF token
                     let csrftoken = getCookie('csrftoken');
                     function getCookie(name) {
                         let cookieValue = null;
@@ -126,7 +124,6 @@
                 }
 
                 render() {
-                     // When data is still loading
                     if (this.state.isLoading) {
                         return (
                             <div>
@@ -134,23 +131,15 @@
                             </div>
                         );
                     } 
-                    // When an error has occurred
-                    if (this.state.hasError) {
-                        return (
-                            <div>
-                                <p>Oops, something went wrong...</p>
-                            </div>
-                        );
-                    }                                    
-                    // When user is not authenticated
-                    if (this.state.isAuthenticated === false) {
+
+                    if (!this.state.isAuthenticated) {
                         return (
                             <div>
                                 <p>You must be logged in to see your list of shows. 
                                 <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
                             </div>
                         );
-                    }                      
+                    }
 
                     if (this.state.isAuthenticated) {
                         return (
@@ -182,6 +171,5 @@
                 document.getElementById('root')
             );
         </script>
-        
     </body>
 </html>
