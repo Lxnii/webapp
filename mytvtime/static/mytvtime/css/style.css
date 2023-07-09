@@ -53,18 +53,42 @@ body {
 }
 .watching-show-list-container {
     text-align: center;
-
 }
+
 .watching-show-list {
     list-style-type: none;
     margin: 0;
     padding: 0;
+    background: no-repeat center center; 
+    background-size: cover; /* Let the background image fill the entire element */
 }
 
 .watching-show-item {
-    background-color: #f2f2f2;
-    border: 1px solid #ddd;
-    margin: 10px 0;
-    padding: 10px;
-    text-align: center;
+    position: relative; /* Set positioning, to add an overlay within */
+    background: no-repeat center center; 
+    background-size: cover;
+    background-color: rgba(242, 242, 242, 0.5); /* Set semi-transparent background color */
+    border: 0px solid #ddd;
+    margin: 0px 0;
+    padding: 20px 10px 10px 20px; /* Adjust padding to shift text to the upper left corner */
+    text-align: left; /* Set text to align to the left */
+    color: #ffffff; /* Change text color */
+    font-size: 20px; /* Increase font size */
+    line-height: 0.5; /* Increase line height to improve readability */
+    font-weight: bold; /* Increase font weight */
+    height: 240px; /* Set a fixed height */
+    overflow: hidden; /* Hide overflowing content */
+}
+
+.watching-show-item button {
+    position: absolute; /* Use absolute positioning */
+    top: 12px; /* Place the button at the top of the element */
+    right: 10px; /* Place the button to the right of the element */
+    padding: 10px 20px; /* Increase padding */
+    background-color: rgba(29, 29, 29, 0.2); /* Change background color */
+    color: #ffffff; /* Change text color */
+    border: none; /* Remove border */
+    border-radius: 10px; /* Add border radius */
+    font-size: 14px; /* Change font size */
+    cursor: pointer; /* Change cursor style */
 }
