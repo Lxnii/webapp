@@ -73,7 +73,6 @@ def logout(request):
     #         show_details = get_show_details_from_trakt(show_id)
     #         if show_details is None:  # Add this check
     #             continue
-
     #         # Calculate the days and hours until the next episode
     #         next_episode = show_details.get('next_episode')
     #         next_episode_time = None
@@ -85,12 +84,10 @@ def logout(request):
     #             time_delta = next_episode_time - now
     #             days = time_delta.days
     #             hours = time_delta.seconds // 3600
-
     #             # Adjustment for negative values of days and hours
     #             if days < 0 or hours < 0:
     #                 days = 0
     #                 hours = 0
-
     #         watching_show = {
     #             'title': show_details.get('title'),
     #             'season': next_episode.get('season') if next_episode else None,  # And check here
@@ -99,9 +96,7 @@ def logout(request):
     #             'hours': hours,
     #             'status': show_details.get('status'),
     #         }
-
     #         watching_shows.append(watching_show)
-
     # return render(request, 'mytvtime/index.html')
 
 def search_shows_on_trakt(query):
@@ -110,7 +105,6 @@ def search_shows_on_trakt(query):
     params = {
         'query': query,
     }
-
     try:
         # Send a GET request to the Trakt API
         response = requests.get(trakt_api_url, headers=trakt_headers, params=params)
@@ -124,7 +118,6 @@ def search_shows_on_trakt(query):
         print(f"Error occurred when searching shows on Trakt API: {e}")
         return []
 
-    
 def search_results(request):
     if request.method == 'POST':
         search_query = request.POST.get('search_query', '')
@@ -138,7 +131,6 @@ def search_results(request):
                 'search_query': search_query,
                 'search_results': search_results,
             }
-
             return render(request, 'mytvtime/search_results.html', context)
 
     return render(request, 'mytvtime/index.html')
@@ -194,7 +186,7 @@ def get_show_images_from_tmdb(tmdb_id):
         response.raise_for_status()
         show_details = response.json()
         poster_path = show_details.get('posters',[])
-        poster_url = f'https://image.tmdb.org/t/p/w500{poster_path[0]["file_path"]}' if poster_path else None
+        poster_url = f'https://image.tmdb.org/t/p/original{poster_path[0]["file_path"]}' if poster_path else None
         backdrops_path = show_details.get('backdrops', [])
         backdrop_url = f'https://image.tmdb.org/t/p/original{backdrops_path[0]["file_path"]}' if backdrops_path else None
 
@@ -202,8 +194,6 @@ def get_show_images_from_tmdb(tmdb_id):
     except requests.exceptions.RequestException as e:
         print(f"Error occurred when getting show images from TMDB API: {e}")
         return None
-
-
 
 def update_show_info(show):
     # This function updates a Show object with the latest information from the Trakt API
@@ -228,9 +218,7 @@ def update_show_info(show):
             next_episode.updated_at = isoparse(next_episode_details.get('updated_at'))
             next_episode.save()
         except Exception as e:
-            print(e)  # print any exception that occurs
-
-    # Save the Show object to the database
+            print(e)
     show.save()
 
 def update_all_database_shows(request):
@@ -260,7 +248,7 @@ def add_show_to_watchlist(request, trakt_id):
                                                    'overview': selected_show_data['overview'],
                                                    'poster_url': images_url['poster_url'],
                                                    'backdrop_url': images_url['backdrop_url']
-                                               })
+                                                })
     show.users.add(request.user)
     show.save()
     next_episode_details = selected_show_data.get('next_episode')
@@ -276,9 +264,7 @@ def add_show_to_watchlist(request, trakt_id):
         next_episode.save()
     # Create a new Watchlist entry for the current user and the selected show
     Watchlist.objects.get_or_create(user=request.user, show=show)
-    # Redirect the user back to the home page
     return redirect('mytvtime:index')
-
 
 @login_required
 def get_watching_shows(request):
@@ -318,7 +304,7 @@ def get_watching_shows(request):
                 hours = time_delta.seconds // 3600
                 minutes = (time_delta.seconds // 60) % 60
                 # minutes = time_delta.total_seconds() // 60 % 60
-                # Adjustment for negative values of days and hours
+                # Adjustment for negative values of days, hours and minutes.
                 if days < 0 or hours < 0:
                     days = 0
                     hours = 0

@@ -14,6 +14,9 @@
     </head>
     <body>
         <h1 class="h1-home">My TV Time</h1>
+        <div id="url-data" style="display: none;"
+            data-logout-url="{% url 'mytvtime:logout' %}">
+        </div>
         <div class="user-actions">
             {% if request.user.is_authenticated %}
                 <span>Welcome, {{ request.user.username }}!</span>
@@ -29,14 +32,18 @@
             <input type="text" name="search_query" placeholder="Seach for a TV show">
             <button type="submit">Search</button>
         </form>
-
+        
+        {% verbatim %}
         <div id="root"></div>
         <script>
             function handleLogout() {
+                const urlDataElement = document.getElementById('url-data');
+                const logoutUrl = urlDataElement.getAttribute('data-logout-url');
                 sessionStorage.removeItem("shows");
                 localStorage.removeItem('watchingShowsData');
                 localStorage.removeItem('watchingShowsTime');
-                window.location.href = "{% url 'mytvtime:logout' %}";
+                
+                window.location.href = logoutUrl;
             }
         </script> 
         <script type="text/babel">
@@ -146,7 +153,8 @@
                             <div className="watching-show-list-container">
                                 <ul className="watching-show-list">
                                     {this.state.watchingShows.map(show =>
-                                        <li key={show.title} className="watching-show-item">
+                                        <li key={show.title} className="watching-show-item" style={{
+                                            backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
                                             <h2>{show.title}</h2>
                                             {show.days != null && show.hours != null && show.minutes != null ? (
                                                 <div>
@@ -173,5 +181,6 @@
                 document.getElementById('root')
             );
         </script>
+        {% endverbatim %}
     </body>
 </html>
