@@ -15,7 +15,10 @@
     <body>
         <h1 class="h1-home">My TV Time</h1>
         <div id="url-data" style="display: none;"
-            data-logout-url="{% url 'mytvtime:logout' %}">
+            data-logout-url="{% url 'mytvtime:logout' %}"
+            data-login-url="{% url 'mytvtime:login' %}"
+            data-register-url="{% url 'mytvtime:register' %}"
+            data-search-results-url="{% url 'mytvtime:search_results' %}">
         </div>
         <div class="user-actions">
             {% if request.user.is_authenticated %}
@@ -58,10 +61,18 @@
                 }
 
                 componentDidMount() {
+                    const urlDataElement = document.getElementById('url-data');
+                    const loginUrl = urlDataElement.getAttribute('data-login-url');
+                    const registerUrl = urlDataElement.getAttribute('data-register-url');
+                    const searchResultsUrl = urlDataElement.getAttribute('data-search-results-url');
                     const authStatusElement = document.getElementById('auth-status');
                     const isAuthenticated = authStatusElement.textContent === 'true';
 
-                    this.setState({ isAuthenticated: isAuthenticated });
+                    this.setState({ 
+                        loginUrl,
+                        registerUrl,
+                        searchResultsUrl,
+                        isAuthenticated: isAuthenticated });
 
                     if (!isAuthenticated) {
                         this.setState({ isLoading: false });
@@ -143,7 +154,7 @@
                         return (
                             <div>
                                 <p>You must be logged in to see your list of shows. 
-                                <a href="{% url 'mytvtime:login' %}">Log in</a> or <a href="{% url 'mytvtime:register' %}">register</a> now.</p>
+                                <a href={this.state.loginUrl}>Log in</a> or <a href={this.state.registerUrl}>register</a> now.</p>
                             </div>
                         );
                     }
