@@ -154,7 +154,10 @@
                                                     <p>Airs in {show.days} days {show.hours} hours {show.minutes} minutes</p>
                                                 </div>
                                             ) : (
+                                                <div>
                                                 <p>{show.status}</p>
+                                                </div>
+                                                
                                             )}
                                             <button className="delete-button"onClick={() => this.handleDelete(show.trakt)}>Delete</button>
                                         </li>
