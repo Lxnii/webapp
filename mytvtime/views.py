@@ -1,7 +1,4 @@
-import os,sys
-import requests
-import json
-import logging
+import os, sys, requests, json, logging
 from django.utils import timezone
 from dateutil.parser import isoparse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -33,6 +30,10 @@ trakt_headers = {
     'Content-Type': 'application/json',
     'trakt-api-version': '2',
     'trakt-api-key': trakt_api_key
+    }
+tmdb_headers = {
+    'accept': 'application/json',
+    'Authorization': tmdb_api_key
     }
 
 def register(request):
@@ -186,6 +187,23 @@ def get_show_details_from_trakt(show_id):
 
     return show_details
 
+def get_show_images_from_tmdb(tmdb_id):
+    tmdb_api_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}/images'
+    try:
+        response = requests.get(tmdb_api_url, headers=tmdb_headers)
+        response.raise_for_status()
+        show_details = response.json()
+        poster_path = show_details.get('posters',[])
+        poster_url = f'https://image.tmdb.org/t/p/w500{poster_path[0]["file_path"]}' if poster_path else None
+        backdrops_path = show_details.get('backdrops', [])
+        backdrop_url = f'https://image.tmdb.org/t/p/original{backdrops_path[0]["file_path"]}' if backdrops_path else None
+
+        return {'poster_url': poster_url, 'backdrop_url': backdrop_url}
+    except requests.exceptions.RequestException as e:
+        print(f"Error occurred when getting show images from TMDB API: {e}")
+        return None
+
+
 
 def update_show_info(show):
     # This function updates a Show object with the latest information from the Trakt API
@@ -215,8 +233,6 @@ def update_show_info(show):
     # Save the Show object to the database
     show.save()
 
-
-
 def update_all_database_shows(request):
     # This view updates all shows in the database
     for show in Show.objects.all():
@@ -229,9 +245,11 @@ def update_all_database_shows(request):
 def add_show_to_watchlist(request, trakt_id):
     # Search and get detail data from trakt API for selected show.
     selected_show_data = get_show_details_from_trakt(trakt_id)
-    
+    tmdb_id= selected_show_data['ids']['tmdb']
+    images_url = get_show_images_from_tmdb(tmdb_id)
+
     # Get or create the Show object based on the Trakt ID
-    show, created = Show.objects.get_or_create(trakt_id=selected_show_data['ids']['trakt'],
+    show, created = Show.objects.update_or_create(trakt_id=selected_show_data['ids']['trakt'],
                                                defaults={
                                                    'imdb_id': selected_show_data['ids']['imdb'],
                                                    'tmdb_id': selected_show_data['ids']['tmdb'],
@@ -239,7 +257,9 @@ def add_show_to_watchlist(request, trakt_id):
                                                    'slug': selected_show_data['ids']['slug'],
                                                    'year': selected_show_data['year'],
                                                    'status': selected_show_data['status'],
-                                                   'overview': selected_show_data['overview']
+                                                   'overview': selected_show_data['overview'],
+                                                   'poster_url': images_url['poster_url'],
+                                                   'backdrop_url': images_url['backdrop_url']
                                                })
     show.users.add(request.user)
     show.save()
@@ -285,6 +305,8 @@ def get_watching_shows(request):
                 'hours': None,
                 'minutes': None,
                 'status': show.status.capitalize(),
+                'poster_url': show.poster_url,
+                'backdrop_url': show.backdrop_url
             }
 
             # Calculate the days and hours until the next episode
@@ -313,8 +335,6 @@ def get_watching_shows(request):
         # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
         return JsonResponse({'unauthenticated': True}, safe=False)
 
-
-    
 
 @login_required
 def remove_show_from_watchlist(request):
