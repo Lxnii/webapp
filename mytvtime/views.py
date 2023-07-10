@@ -212,10 +212,13 @@ def get_show_images_from_tmdb(tmdb_id):
         show_details = response.json()
         poster_path = show_details.get('posters',[])
         poster_url = f'https://image.tmdb.org/t/p/original{poster_path[0]["file_path"]}' if poster_path else None
+        poster_w780_url = f'https://image.tmdb.org/t/p/w780{poster_path[0]["file_path"]}' if poster_path else None
         backdrops_path = show_details.get('backdrops', [])
         backdrop_url = f'https://image.tmdb.org/t/p/original{backdrops_path[0]["file_path"]}' if backdrops_path else None
 
-        return {'poster_url': poster_url, 'backdrop_url': backdrop_url}
+        return {'poster_url': poster_url, 
+                'poster_w780_url': poster_w780_url, 
+                'backdrop_url': backdrop_url}
     except requests.exceptions.RequestException as e:
         print(f"Error occurred when getting show images from TMDB API: {e}")
         return None
