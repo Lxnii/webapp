@@ -12,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
     <title>Show Search Results</title>
 </head>
-<body>
+<body class="search-results-page">
     <div class="user-actions">
         {% if request.user.is_authenticated %}
             <span>Welcome, {{ request.user.username }}!</span>
@@ -40,9 +40,10 @@
         {% for result in search_results %}
             <div class="search-results-item-container">
                 <li class="search-results-item" style="background-image: url('{{ result.show.poster_url }}');">
-                    <h2>{{ result.show.title }}</h2>
+                    <!-- <h2>{{ result.show.title }}</h2> -->
                     <!-- <p>{{ result.show.year }}</p> -->
-                    <!-- <p>Trakt ID: {{ result.show.ids.trakt }}</p> -->
+                    <p>Trakt ID: {{ result.show.ids.slug }}</p>
+                    <p>Trakt ID: {{ result.show.ids.tmdb }}</p>
                     <!-- <p>{{ result.show.status }}</p> -->
                 </li>
                 {% if request.user.is_authenticated %}
