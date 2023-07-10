@@ -134,6 +134,31 @@ def search_results(request):
             return render(request, 'mytvtime/search_results.html', context)
 
     return render(request, 'mytvtime/index.html')
+def search_results(request):
+    if request.method == 'POST':
+        search_query = request.POST.get('search_query', '')
+
+        if search_query:
+            # Call the Trakt API to search for shows
+            search_results = search_shows_on_trakt(search_query)
+
+            # Add a poster_url from TMDB to each search result
+            for result in search_results:
+                tmdb_id = result['show']['ids']['tmdb']
+                images_url = get_show_images_from_tmdb(tmdb_id)
+                if images_url is not None:
+                    result['show']['poster_url'] = images_url['poster_url']
+                else:
+                    result['show']['poster_url'] = None  # or set a default poster URL
+
+            # Pass the search results to the frontend page for display
+            context = {
+                'search_query': search_query,
+                'search_results': search_results,
+            }
+            return render(request, 'mytvtime/search_results.html', context)
+
+    return render(request, 'mytvtime/index.html')
 
 # def get_show_details_from_trakt(show_id):
 #     trakt_api_url = f'https://api.trakt.tv/shows/{show_id}?extended=full'
