@@ -1,6 +1,7 @@
 .h1-home {
     text-align: center; 
 }
+
 body {
     position: relative;
 }
@@ -16,9 +17,6 @@ body {
     margin-left: 10px;
 }
 
-.search-results h2 {
-    text-align: center; 
-}
 .search-box {
     display: flex;
     justify-content: center;
@@ -40,17 +38,82 @@ body {
     margin: 0 5px;
 }
 
-.search-results ul {
+.search-results-list-container {
     text-align: center;
-    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
 }
 
-.search-back-button {
-    position: absolute;
-    top: 20px;
-    left: 30px;
-    font-size: 18px;
+.search-results-list {
+    list-style-type: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-gap: 1em;
+    max-width: 2000px;  /* New property to limit the maximum width */
+    width: 100%;
+    padding: 0;
 }
+
+.search-results-item {
+    position: relative;
+    background: no-repeat center center;
+    background-size: cover;
+    background-color: rgba(242, 242, 242, 0.5);
+    border: 0px solid #ddd;
+    margin: 10px;
+    padding: 20px 10px 10px 20px;
+    text-align: left;
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1.5;
+    font-weight: bold;
+    height: 240px;
+    overflow: hidden;
+}
+
+.search-results-item h2 {
+    margin: 0;
+    padding: 0;
+}
+
+.search-results-add-button {
+    padding: 10px 20px;
+    background-color: rgba(29, 29, 29, 0.2);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;  /* New property to move the button below the poster */
+}
+
+@media (max-width: 600px) {
+    .search-results-list {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+    .search-results-list {
+        grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
+    }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+    .search-results-list {
+        grid-template-columns: repeat(auto-fill, minmax(33.33%, 1fr));
+    }
+}
+
+@media (min-width: 1201px) {
+    .search-results-list {
+        grid-template-columns: repeat(auto-fill, minmax(25%, 1fr));
+    }
+}
+
 .watching-show-list-container {
     text-align: center;
 }
