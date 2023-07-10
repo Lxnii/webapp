@@ -38,23 +38,33 @@ body {
     margin: 0 5px;
 }
 
+.search-back-button {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    font-size: 18px;
+}
 .search-results-list-container {
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
 }
 
 .search-results-list {
     list-style-type: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    grid-gap: 1em;
-    max-width: 2000px;  /* New property to limit the maximum width */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));  /* Decrease the size of each item to show more items per row */
+    grid-gap: 2em;
+    max-width: 1200px;
     width: 100%;
     padding: 0;
+}
+
+.search-results-item-container {
+    display: grid;
+    align-content: start;
 }
 
 .search-results-item {
@@ -63,16 +73,18 @@ body {
     background-size: cover;
     background-color: rgba(242, 242, 242, 0.5);
     border: 0px solid #ddd;
-    margin: 10px;
-    padding: 20px 10px 10px 20px;
+    margin: 0;
+    /* padding: 20px 10px 10px 20px; */
     text-align: left;
     color: #ffffff;
-    font-size: 20px;
+    font-size: 10px;
     line-height: 1.5;
     font-weight: bold;
-    height: 240px;
     overflow: hidden;
+    width: 100%;  
+    height: 750px;  /* Set a fixed height for each item */
 }
+
 
 .search-results-item h2 {
     margin: 0;
@@ -87,7 +99,9 @@ body {
     border-radius: 10px;
     font-size: 14px;
     cursor: pointer;
-    margin-top: 10px;  /* New property to move the button below the poster */
+    margin-top: 10px;
+    display: block;
+    width: calc(100% - 290px);
 }
 
 @media (max-width: 600px) {

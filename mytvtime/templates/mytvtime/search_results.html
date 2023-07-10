@@ -34,24 +34,26 @@
             localStorage.removeItem('watchingShowsTime');
         }
     </script>
-    <div class="search-results-list-container">
-        <h2>Search Results for "{{ search_query }}"</h2>
-        <ul class="search-results-list">
-            {% for result in search_results %}
+<div class="search-results-list-container">
+    <h2>Search Results for "{{ search_query }}"</h2>
+    <ul class="search-results-list">
+        {% for result in search_results %}
+            <div class="search-results-item-container">
                 <li class="search-results-item" style="background-image: url('{{ result.show.poster_url }}');">
                     <h2>{{ result.show.title }}</h2>
-                    <p>{{ result.show.year }}</p>
+                    <!-- <p>{{ result.show.year }}</p> -->
                     <!-- <p>Trakt ID: {{ result.show.ids.trakt }}</p> -->
                     <!-- <p>{{ result.show.status }}</p> -->
-                    {% if request.user.is_authenticated %}
-                    <a href="{% url 'mytvtime:add_to_watchlist' result.show.ids.trakt %}" onclick="clearStorage();" class="search-results-add-button">Add to Watchlist</a>
-                    {% endif %}
                 </li>
-            {% empty %}
-                <p>No search results found for "{{ search_query }}".</p>
-            {% endfor %}
-        </ul>
-    </div>
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'mytvtime:add_to_watchlist' result.show.ids.trakt %}" onclick="clearStorage();" class="search-results-add-button">Add to Watchlist</a>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>No search results found for "{{ search_query }}".</p>
+        {% endfor %}
+    </ul>
+</div>
 
     <!-- Back to home page -->
     <a class="search-back-button" href="/mytvtime">Back to Home</a> 
