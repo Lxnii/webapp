@@ -147,7 +147,7 @@ def search_results(request):
                 tmdb_id = result['show']['ids']['tmdb']
                 images_url = get_show_images_from_tmdb(tmdb_id)
                 if images_url is not None:
-                    result['show']['poster_url'] = images_url['poster_url']
+                    result['show']['poster_url'] = images_url['poster_w780_url']
                 else:
                     result['show']['poster_url'] = None  # or set a default poster URL
 
