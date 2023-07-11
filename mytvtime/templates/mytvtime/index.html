@@ -172,8 +172,8 @@
 
                     if (this.state.isAuthenticated) {
                         return (
+                            
                             <div className="watching-show-list-container">
-                                <button className="update-database-button" onClick={() => this.handleUpdate()}>Update Database</button>
                                 <ul className="watching-show-list">
                                     {this.state.watchingShows.map(show =>
                                         <li key={show.title} className="watching-show-item" style={{
@@ -193,6 +193,7 @@
                                         </li>
                                     )}
                                 </ul>
+                                <button className="update-database-button" onClick={() => this.handleUpdate()}>Update Database</button>
                             </div>
                         );
                     }
