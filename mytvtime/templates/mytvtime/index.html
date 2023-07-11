@@ -32,7 +32,7 @@
         <div id="auth-status" style="display: none;">{% if request.user.is_authenticated %}true{% else %}false{% endif %}</div>
         <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
             {% csrf_token %}
-            <input type="text" name="search_query" placeholder="Search for a TV show">
+            <input type="text" name="search_query" placeholder="Search for a TV show" autocomplete="off">
             <button type="submit">Search</button>
         </form>
         
@@ -165,7 +165,7 @@
                         return (
                             <div class="user-login-prompt">
                                 <p>You must be logged in to see your list of shows.</p>
-                                <p><a href={this.state.loginUrl}>Log in</a> or <a href={this.state.registerUrl}>register</a> now.</p>
+                                <p><a href={this.state.loginUrl}>Log in</a> or <a href={this.state.registerUrl}>Register</a> now.</p>
                             </div>
                         );
                     }
