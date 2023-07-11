@@ -141,6 +141,17 @@
                     });
                 }
 
+                handleUpdate() {
+                    axios.get('/mytvtime/update_database/')
+                        .then(res => {
+                            if (res.data.status === 'success') {
+                                this.componentDidMount();
+                            } else {
+                                alert('Could not update database');
+                            }
+                        });
+                }
+
                 render() {
                     if (this.state.isLoading) {
                         return (
@@ -162,6 +173,7 @@
                     if (this.state.isAuthenticated) {
                         return (
                             <div className="watching-show-list-container">
+                                <button className="update-database-button" onClick={() => this.handleUpdate()}>Update Database</button>
                                 <ul className="watching-show-list">
                                     {this.state.watchingShows.map(show =>
                                         <li key={show.title} className="watching-show-item" style={{
@@ -177,7 +189,7 @@
                                                 <p>{show.status}</p>
                                                 </div>
                                             )}
-                                            <button className="delete-button"onClick={() => this.handleDelete(show.trakt)}>Delete</button>
+                                            <button className="delete-button" onClick={() => this.handleDelete(show.trakt)}>Delete</button>
                                         </li>
                                     )}
                                 </ul>
