@@ -12,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
     <title>Show Search Results</title>
 </head>
-<body class="search-results-page">
+<body class="body-search-results-page">
     <div class="user-actions">
         {% if request.user.is_authenticated %}
             <span>Welcome, {{ request.user.username }}!</span>
@@ -24,7 +24,7 @@
     </div>
     <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
         {% csrf_token %}
-        <input type="text" name="search_query" placeholder="Enter search keyword">
+        <input type="text" name="search_query" placeholder="Search for a TV show">
         <button type="submit">Search</button>
     </form>
     <script>
@@ -41,7 +41,7 @@
             <div class="search-results-item-container">
                 {% if result.show.poster_url == None %}
                     <li class="search-results-item">
-                        <h2>{{ result.show.title }}</h2>
+                        <h3>{{ result.show.title }}</h3>
                         <p>Year: {{ result.show.year }}</p>
                     </li>
                 {% else %}
