@@ -12,8 +12,8 @@
         <title>My TV Time</title>
         <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
     </head>
-    <body>
-        <h1 class="h1-home">My TV Time</h1>
+    <body class="body-home-page">
+        <!-- <h1 class="h1-home">My TV Time</h1> -->
         <div id="url-data" style="display: none;"
             data-logout-url="{% url 'mytvtime:logout' %}"
             data-login-url="{% url 'mytvtime:login' %}"
@@ -22,7 +22,7 @@
         </div>
         <div class="user-actions">
             {% if request.user.is_authenticated %}
-                <span>Welcome, {{ request.user.username }}!</span>
+                <span>Welcome, {{ request.user.username }}</span>
                 <a href="javascript:void(0);" onclick="handleLogout()">Logout</a>
             {% else %}
                 <a href="{% url 'mytvtime:login' %}">Login</a>
@@ -32,7 +32,7 @@
         <div id="auth-status" style="display: none;">{% if request.user.is_authenticated %}true{% else %}false{% endif %}</div>
         <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
             {% csrf_token %}
-            <input type="text" name="search_query" placeholder="Seach for a TV show">
+            <input type="text" name="search_query" placeholder="Search for a TV show">
             <button type="submit">Search</button>
         </form>
         
@@ -163,9 +163,9 @@
 
                     if (!this.state.isAuthenticated) {
                         return (
-                            <div>
-                                <p>You must be logged in to see your list of shows. 
-                                <a href={this.state.loginUrl}>Log in</a> or <a href={this.state.registerUrl}>register</a> now.</p>
+                            <div class="user-login-prompt">
+                                <p>You must be logged in to see your list of shows.</p>
+                                <p><a href={this.state.loginUrl}>Log in</a> or <a href={this.state.registerUrl}>register</a> now.</p>
                             </div>
                         );
                     }
