@@ -12,4 +12,6 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('get_watching_shows/', views.get_watching_shows),
     path('remove_from_watchlist/', views.remove_show_from_watchlist, name='remove_from_watchlist'),
+    path('update_database/', views.update_all_database_shows, name='update_database'),
+
 ]

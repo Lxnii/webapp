@@ -156,3 +156,29 @@ body.search-results-page {
     font-size: 14px; /* Change font size */
     cursor: pointer; /* Change cursor style */
 }
+
+.update-database-button {
+    background-color: #8ab4ef; /* Change to a bright pink */
+    border: none;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    border-radius: 25px; /* Add border radius to make the button more rounded */
+    transition: all 0.3s ease; /* Transition all properties for a smoother animation */
+    cursor: pointer;
+    margin-top: 10px;
+    opacity: 0.8;
+}
+
+.update-database-button:hover {
+    opacity: 1;
+    transform: scale(1); /* Increase the size of the button when hovered */
+}
+
+.update-database-button:active {
+    opacity: 1;
+    transform: scale(0.95); /* Decrease the size of the button when clicked */
+}
