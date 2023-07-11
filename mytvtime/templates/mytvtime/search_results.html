@@ -39,13 +39,15 @@
     <ul class="search-results-list">
         {% for result in search_results %}
             <div class="search-results-item-container">
-                <li class="search-results-item" style="background-image: url('{{ result.show.poster_url }}');">
-                    <!-- <h2>{{ result.show.title }}</h2> -->
-                    <!-- <p>{{ result.show.year }}</p> -->
-                    <p>Trakt ID: {{ result.show.ids.slug }}</p>
-                    <p>Trakt ID: {{ result.show.ids.tmdb }}</p>
-                    <!-- <p>{{ result.show.status }}</p> -->
-                </li>
+                {% if result.show.poster_url == None %}
+                    <li class="search-results-item">
+                        <h2>{{ result.show.title }}</h2>
+                        <p>Year: {{ result.show.year }}</p>
+                    </li>
+                {% else %}
+                    <li class="search-results-item" style="background-image: url('{{ result.show.poster_url }}');">
+                    </li>
+                {% endif %}
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'mytvtime:add_to_watchlist' result.show.ids.trakt %}" onclick="clearStorage();" class="search-results-add-button">Add to Watchlist</a>
                 {% endif %}
@@ -55,6 +57,7 @@
         {% endfor %}
     </ul>
 </div>
+
 
     <!-- Back to home page -->
     <a class="search-back-button" href="/mytvtime">Back to Home</a> 
