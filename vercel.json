@@ -2,7 +2,7 @@
   "builds": [
     {
       "src": "webapp/wsgi.py",
-      "use": "@vercel/python@3.11"
+      "use": "@vercel/python"
     }
   ],
   "routes": [
