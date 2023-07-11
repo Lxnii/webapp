@@ -225,16 +225,22 @@ def get_show_images_from_tmdb(tmdb_id):
 
 def update_show_info(show):
     # This function updates a Show object with the latest information from the Trakt API
-
     show_details = get_show_details_from_trakt(show.trakt_id)
-
+    images_url = get_show_images_from_tmdb(show.tmdb_id)
+    if images_url == None:
+        images_url ={'poster_url': None, 'poster_w780_url': None, 'backdrop_url': None}
     # Update the Show object with the new information
     show.title = show_details.get('title')
     show.year = show_details.get('year')
+    show.imdb_id = show_details.get('ids', {}).get('imdb'),
+    show.tmdb_id = show_details.get('ids', {}).get('tmdb'),
+    show.title = show_details.get('title'),
+    show.slug = show_details.get('ids', {}).get('slug'),
     show.status = show_details.get('status')
     show.overview = show_details.get('overview')
-
-    # Get the next episode details
+    show.poster_url = images_url.get('poster_url'),
+    show.backdrop_url = images_url.get('backdrop_url')
+# Get the next episode details
     next_episode_details = show_details.get('next_episode')
     if next_episode_details:
         try:
@@ -261,22 +267,21 @@ def update_all_database_shows(request):
 def add_show_to_watchlist(request, trakt_id):
     # Search and get detail data from trakt API for selected show.
     selected_show_data = get_show_details_from_trakt(trakt_id)
-    tmdb_id= selected_show_data['ids']['tmdb']
+    tmdb_id = selected_show_data['ids']['tmdb']    
     images_url = get_show_images_from_tmdb(tmdb_id)
-
+    if images_url == None:
+        images_url ={'poster_url': None, 'poster_w780_url': None, 'backdrop_url': None}
     # Get or create the Show object based on the Trakt ID
-    show, created = Show.objects.update_or_create(trakt_id=selected_show_data['ids']['trakt'],
-                                               defaults={
-                                                   'imdb_id': selected_show_data['ids']['imdb'],
-                                                   'tmdb_id': selected_show_data['ids']['tmdb'],
-                                                   'title': selected_show_data['title'],
-                                                   'slug': selected_show_data['ids']['slug'],
-                                                   'year': selected_show_data['year'],
-                                                   'status': selected_show_data['status'],
-                                                   'overview': selected_show_data['overview'],
-                                                   'poster_url': images_url['poster_url'],
-                                                   'backdrop_url': images_url['backdrop_url']
-                                                })
+    show, created = Show.objects.update_or_create(trakt_id=selected_show_data.get('ids', {}).get('trakt'),
+                                                    imdb_id = selected_show_data.get('ids', {}).get('imdb'),
+                                                    tmdb_id = selected_show_data.get('ids', {}).get('tmdb'),
+                                                    title = selected_show_data.get('title'),
+                                                    slug = selected_show_data.get('ids', {}).get('slug'),
+                                                    year = selected_show_data.get('year'),
+                                                    status = selected_show_data.get('status'),
+                                                    overview = selected_show_data.get('overview'),
+                                                    poster_url = images_url.get('poster_url'),
+                                                    backdrop_url = images_url.get('backdrop_url'))
     show.users.add(request.user)
     show.save()
     next_episode_details = selected_show_data.get('next_episode')
