@@ -42,7 +42,7 @@
     justify-content: center;
     /* margin: 2em auto;  */
     width: 100%;
-    margin: 0 auto;
+    margin: 0 auto 20px;
     padding: 10px;
     border-radius: 25px;
     background: #ffffff;
@@ -179,6 +179,7 @@
 
 .watching-show-list-container {
     text-align: center;
+    margin-top: 50px;
 }
 
 .watching-show-list {
@@ -207,6 +208,10 @@
     overflow: hidden; /* Hide overflowing content */
     
 }
+.watching-show-item h2, .watching-show-item p {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+}
 
 .watching-show-item button {
     position: absolute; /* Use absolute positioning */
@@ -222,7 +227,9 @@
 }
 
 .update-database-button {
-    background-color: #8ab4ef; /* Change to a bright pink */
+    margin-top: 50px;
+    margin-bottom: 50px;
+    background-color: #8ab4ef; 
     border: none;
     color: white;
     padding: 10px;
