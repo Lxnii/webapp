@@ -2,4 +2,4 @@ Django==4.2.3
 requests==2.31.0
 asgiref==3.7.2
 sqlparse==0.4.4
-ibsqlite==3.42.0
+ibsqlite==3.8.3
