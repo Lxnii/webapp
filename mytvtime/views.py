@@ -226,19 +226,20 @@ def get_show_images_from_tmdb(tmdb_id):
 def update_show_info(show):
     # This function updates a Show object with the latest information from the Trakt API
     show_details = get_show_details_from_trakt(show.trakt_id)
+    TMDb_id = show_details.get('ids', {}).get('tmdb')
     images_url = get_show_images_from_tmdb(show.tmdb_id)
     if images_url == None:
         images_url ={'poster_url': None, 'poster_w780_url': None, 'backdrop_url': None}
     # Update the Show object with the new information
     show.title = show_details.get('title')
     show.year = show_details.get('year')
-    show.imdb_id = show_details.get('ids', {}).get('imdb'),
-    show.tmdb_id = show_details.get('ids', {}).get('tmdb'),
-    show.title = show_details.get('title'),
-    show.slug = show_details.get('ids', {}).get('slug'),
+    show.imdb_id = show_details.get('ids', {}).get('imdb')
+    show.tmdb_id = show_details.get('ids', {}).get('tmdb')
+    show.title = show_details.get('title')
+    show.slug = show_details.get('ids', {}).get('slug')
     show.status = show_details.get('status')
     show.overview = show_details.get('overview')
-    show.poster_url = images_url.get('poster_url'),
+    show.poster_url = images_url.get('poster_url')
     show.backdrop_url = images_url.get('backdrop_url')
 # Get the next episode details
     next_episode_details = show_details.get('next_episode')
