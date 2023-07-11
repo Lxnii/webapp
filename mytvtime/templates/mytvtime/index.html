@@ -79,7 +79,7 @@
                         return;
                     }
 
-                    axios.get('/mytvtime/get_watching_shows/')
+                    axios.get('/get_watching_shows/')
                         .then(res => {
                             const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
                                 const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
@@ -123,7 +123,7 @@
 
                     axios({
                         method: 'post',
-                        url: '/mytvtime/remove_from_watchlist/',
+                        url: '/remove_from_watchlist/',
                         data: {
                             trakt_id: id
                         },
@@ -142,7 +142,7 @@
                 }
 
                 handleUpdate() {
-                    axios.get('/mytvtime/update_database/')
+                    axios.get('/update_database/')
                         .then(res => {
                             if (res.data.status === 'success') {
                                 this.componentDidMount();
