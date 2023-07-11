@@ -127,8 +127,9 @@ body.search-results-page {
 
 .watching-show-item {
     position: relative; /* Set positioning, to add an overlay within */
-    background: no-repeat center center; 
+    /* background: no-repeat center center;  */
     background-size: cover;
+    background-position: center;
     background-color: rgba(242, 242, 242, 0.5); /* Set semi-transparent background color */
     border: 0px solid #ddd;
     margin: 0px 0;
@@ -138,8 +139,9 @@ body.search-results-page {
     font-size: 20px; /* Increase font size */
     line-height: 0.5; /* Increase line height to improve readability */
     font-weight: bold; /* Increase font weight */
-    height: 240px; /* Set a fixed height */
+    height: 300px; /* Set a fixed height */
     overflow: hidden; /* Hide overflowing content */
+    
 }
 
 .watching-show-item button {
