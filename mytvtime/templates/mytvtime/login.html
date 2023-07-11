@@ -1,14 +1,16 @@
+{% load static %} 
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
     <title>Login</title>
 </head>
-<body>
+<body class="body-login-page">
     <h2>Login</h2>
-    <form method="post">
+    <form class="login-form" method="post" autocomplete="off">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Login</button>
+        <div class="login-form-hints">{{ form.as_p }}</div>
+        <button class="login-button" type="submit">Login</button>
     </form>
 </body>
 </html>

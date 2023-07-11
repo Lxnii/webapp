@@ -24,7 +24,7 @@
     </div>
     <form class="search-box" action="{% url 'mytvtime:search_results' %}" method="post">
         {% csrf_token %}
-        <input type="text" name="search_query" placeholder="Search for a TV show">
+        <input type="text" name="search_query" placeholder="Search for a TV show" autocomplete="off">
         <button type="submit">Search</button>
     </form>
     <script>

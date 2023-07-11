@@ -1,14 +1,16 @@
+{% load static %} 
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
     <title>Register</title>
 </head>
-<body>
+<body class="body-register-page">
     <h2>Register</h2>
-    <form method="post">
+    <form class="register-form" method="post" autocomplete="off">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
+        <div class="register-form-hints">{{ form.as_p }}</div>
+        <button class="register-button" type="submit">Register</button>
     </form>
 </body>
 </html>
