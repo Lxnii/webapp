@@ -145,6 +145,10 @@
 .search-results-list-container h2 {
     font-size: 1.5em;
     color: #333;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    margin-left: 1em;
+
 }
 
 .search-results-item {
@@ -279,7 +283,6 @@
 }
 
 /* login and register page */
-
 .body-login-page, .body-register-page {
     font-family: 'Roboto', sans-serif;
     background-color: #f3f3f3;
