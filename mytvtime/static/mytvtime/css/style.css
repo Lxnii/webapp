@@ -44,7 +44,8 @@
     display: flex;
     justify-content: center;
     margin: 1em auto; 
-    width: 100%;
+    margin-top: 3em;
+    width: 45%;
     /* margin: 0 auto 20px; */
     box-sizing: border-box;
     padding: 10px;
@@ -52,9 +53,9 @@
     background: #ffffff;
     box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
 }
-@media screen and (min-width: 600px) {
+@media screen and (max-width: 1300px) {
     .search-box {
-        width: 50%;
+        width: 88%;
     }
 }
 .search-box input[type="text"] {
@@ -211,29 +212,42 @@
     padding: 20px 10px 10px 20px; /* Adjust padding to shift text to the upper left corner */
     text-align: left; 
     color: #ffffff; 
-    font-size: 20px; 
+    /* font-size: 20px;  */
     line-height: 0.5;
     font-weight: bold; 
     height: 300px; 
     overflow: hidden; /* Hide overflowing content */
     
 }
+
 .watching-show-item h2, .watching-show-item p {
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
 }
 
-.watching-show-item .countdown {
-    font-size: 30px;
-    color: #ffffff;
-    /* background: rgba(0, 0, 0, 0.6); */
-    /* margin: 10px; */
-    /* padding: 10px; */
+.watching-show-item h2, .countdown {
+    font-size: 30px; 
     position: relative;
     text-align: left; 
     bottom: 0;
 }
+.watching-show-item .show-season, .show-status {
+    font-size: 20px; 
+}
 
+@media screen and (max-width: 1300px) {
+    .watching-show-item {
+        padding: 0px 5px 5px 10px;
+        height: 180px;
+    }
+    .watching-show-item h2, .countdown{
+        font-size: 18px; 
+    }
+    .watching-show-item .show-season, .show-statusn {
+        font-size: 14px; 
+    }
+
+} 
 
 .watching-show-item button {
     position: absolute; /* Use absolute positioning */
@@ -283,7 +297,7 @@
     border-radius: 5px;
     margin: 2em 0;
     text-align: center;
-    margin-top: 16em;
+    margin-top: 10em;
 }
 
 .user-login-prompt a {
