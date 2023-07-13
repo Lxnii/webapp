@@ -15,7 +15,7 @@
 <body class="body-search-results-page">
     <div class="user-actions">
         {% if request.user.is_authenticated %}
-            <span>Welcome, {{ request.user.username }}!</span>
+            <span>Welcome, {{ request.user.username }}</span>
             <a href="{% url 'mytvtime:logout' %}">Logout</a>
         {% else %}
             <a href="{% url 'mytvtime:login' %}">Login</a>

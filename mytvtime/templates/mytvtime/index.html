@@ -58,6 +58,7 @@
                         isLoading: true,
                         isAuthenticated: false,
                     };
+                    this.countdownInterval = null; //store the countdown interval
                 }
 
                 componentDidMount() {
@@ -79,6 +80,7 @@
                         return;
                     }
 
+
                     axios.get('/get_watching_shows/')
                         .then(res => {
                             const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
@@ -87,13 +89,22 @@
                                 return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
                             }) : [];
 
+                            // add countdown to each show
+                            for (const show of watchingShows) {
+                                show.countdown = {
+                                    days: show.days,
+                                    hours: show.hours,
+                                    minutes: show.minutes
+                                };
+                            }
+
                             this.setState({
                                 watchingShows,
                                 isLoading: false,
                             });
 
-                            localStorage.setItem('watchingShowsData', JSON.stringify(watchingShows));
-                            localStorage.setItem('watchingShowsTime', new Date().getTime().toString());
+                            // start the countdown interval
+                            this.countdownInterval = setInterval(this.updateCountdowns, 60000);
                         })
                         .catch(error => {
                             console.error(error);
@@ -103,7 +114,41 @@
                             });
                         });
                 }
+                componentWillUnmount() {
+                    // clear the countdown interval
+                    if (this.countdownInterval) {
+                        clearInterval(this.countdownInterval);
+                        this.countdownInterval = null;
+                    }
+                }
+                
+                // update countdowns
+                updateCountdowns = () => {
+                    this.setState(prevState => {
+                        const watchingShows = [...prevState.watchingShows];
+                        for (const show of watchingShows) {
+                            if (show.countdown) {
+                                if (show.countdown.minutes && show.countdown.minutes > 0) {
+                                    show.countdown.minutes--;
+                                } else if (show.countdown.hours && show.countdown.hours > 0) {
+                                    show.countdown.hours--;
+                                    show.countdown.minutes = 59;
+                                } else if (show.countdown.days && show.countdown.days > 0) {
+                                    show.countdown.days--;
+                                    show.countdown.hours = 23;
+                                    show.countdown.minutes = 59;
+                                } else {
+                                    show.countdown.days = null;
+                                    show.countdown.hours = null;
+                                    show.countdown.minutes = null;
+                                }
+                            }
 
+                        }
+                        return { watchingShows };
+                    });
+                };
+                            
                 handleDelete(id) {
                     let csrftoken = getCookie('csrftoken');
                     function getCookie(name) {
@@ -169,24 +214,22 @@
                             </div>
                         );
                     }
-
                     if (this.state.isAuthenticated) {
                         return (
-                            
                             <div className="watching-show-list-container">
                                 <ul className="watching-show-list">
                                     {this.state.watchingShows.map(show =>
                                         <li key={show.title} className="watching-show-item" style={{
                                             backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
                                             <h2>{show.title}</h2>
-                                            {show.days != null && show.hours != null && show.minutes != null ? (
+                                            {show.countdown.days != null && show.countdown.hours != null && show.countdown.minutes != null ? (
                                                 <div>
-                                                    <p>Season: {show.season} Episode: {show.episode}</p>
-                                                    <p>Airs in {show.days} days {show.hours} hours {show.minutes} minutes</p>
+                                                    <p>S{show.season} E{show.episode}</p>
+                                                    {show.countdown ? <p className="countdown">{`${show.countdown.days}D ${show.countdown.hours}H ${show.countdown.minutes}M`}</p> : null}
                                                 </div>
                                             ) : (
                                                 <div>
-                                                <p>{show.status}</p>
+                                                    <p>{show.status}</p>
                                                 </div>
                                             )}
                                             <button className="delete-button" onClick={() => this.handleDelete(show.trakt)}>Delete</button>
