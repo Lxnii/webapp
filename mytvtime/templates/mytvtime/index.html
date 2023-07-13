@@ -189,7 +189,7 @@
                 }
 
                 handleUpdate() {
-                    axios.get('/update_database/')
+                    axios.get('/update_user_watchlist/')
                         .then(res => {
                             if (res.data.status === 'success') {
                                 this.componentDidMount();
@@ -245,7 +245,7 @@
                                         </li>
                                     )}
                                 </ul>
-                                <button className="update-database-button" onClick={() => this.handleUpdate()}>Update Database</button>
+                                <button className="update-database-button" onClick={() => this.handleUpdate()}>Refresh List</button>
                             </div>
                         );
                     }

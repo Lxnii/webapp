@@ -14,5 +14,6 @@ urlpatterns = [
     path('get_watching_shows/', views.get_watching_shows),
     path('remove_from_watchlist/', views.remove_show_from_watchlist, name='remove_from_watchlist'),
     path('update_database/', views.update_all_database_shows, name='update_database'),
+    path('update_user_watchlist/', views.update_user_watchlist_shows, name='update_user_watchlist'),
     path('change_password/', auth_views.PasswordChangeView.as_view(template_name='change_password.html'), name='change_password'),
 ]

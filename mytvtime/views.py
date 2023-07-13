@@ -265,6 +265,15 @@ def update_all_database_shows(request):
     return JsonResponse({"status": "success"})
 
 @login_required
+def update_user_watchlist_shows(request):
+    user = request.user
+    user_watchlist = Watchlist.objects.filter(user=user)
+    for watchlist_item in user_watchlist:
+        show = watchlist_item.show
+        update_show_info(show)
+    return JsonResponse({"status": "success"})
+
+@login_required
 def add_show_to_watchlist(request, trakt_id):
     # Search and get detail data from trakt API for selected show.
     selected_show_data = get_show_details_from_trakt(trakt_id)
