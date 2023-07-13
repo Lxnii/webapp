@@ -5,8 +5,8 @@
 .body-home-page {
     font-family: 'Roboto', sans-serif;
     background-color: #f3f3f3;
-    /* padding: 12px; */
-    padding-top: 2em;
+    padding-top: 2.5em;
+    margin: 0;
 }
 
 /* login, register button (right top page) */
