@@ -86,10 +86,10 @@
                         .then(res => {
                             console.log(res.data);
                             const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
-                                const minutesUntilNextEpisodeA = a.days * 24 * 60 + a.hours * 60 + a.minutes;
-                                const minutesUntilNextEpisodeB = b.days * 24 * 60 + b.hours * 60 + b.minutes;
-                                return (minutesUntilNextEpisodeA || Infinity) - (minutesUntilNextEpisodeB || Infinity);
-                            }) : [];
+                            const minutesUntilNextEpisodeA = a.days * 24 * 60 + a.hours * 60 + a.minutes;
+                            const minutesUntilNextEpisodeB = b.days * 24 * 60 + b.hours * 60 + b.minutes;
+                            return (minutesUntilNextEpisodeA || Infinity) - (minutesUntilNextEpisodeB || Infinity);
+                        }) : [];
 
                             // add countdown to each show
                             for (const show of watchingShows) {
@@ -225,7 +225,7 @@
                                             backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
                                             <h2>{show.title}</h2>
                                             {show.countdown.days != null && show.countdown.hours != null && show.countdown.minutes != null ? (
-                                                <div>
+                                                <>
                                                     <p className="show-season">S{show.season} E{show.episode}</p>
                                                     {show.countdown ? 
                                                     (<div className="countdown">
@@ -235,11 +235,11 @@
                                                             <li><span>{show.countdown.minutes}</span>Minutes</li>
                                                         </ul>
                                                     </div>): null}
-                                                </div>
+                                                </>
                                             ) : (
-                                                <div>
+                                                <>
                                                     <p className="show-status">{show.status}</p>
-                                                </div>
+                                                </>
                                             )}
                                             <button className="delete-button" onClick={() => this.handleDelete(show.trakt)}>Delete</button>
                                         </li>
