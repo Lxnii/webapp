@@ -86,9 +86,9 @@
                         .then(res => {
                             console.log(res.data);
                             const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
-                                const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
-                                const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
-                                return (hoursUntilNextEpisodeA || Infinity) - (hoursUntilNextEpisodeB || Infinity);
+                                const minutesUntilNextEpisodeA = a.days * 24 * 60 + a.hours * 60 + a.minutes;
+                                const minutesUntilNextEpisodeB = b.days * 24 * 60 + b.hours * 60 + b.minutes;
+                                return (minutesUntilNextEpisodeA || Infinity) - (minutesUntilNextEpisodeB || Infinity);
                             }) : [];
 
                             // add countdown to each show
