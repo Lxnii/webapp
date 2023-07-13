@@ -250,7 +250,6 @@
 }  */
 
 
-
 .watching-show-item button {
     position: absolute; /* Use absolute positioning */
     top: 12px; /* Place the button at the top of the element */
@@ -380,7 +379,6 @@
 
 
 /* Test Countdown Styles */
-
 .countdown {
     text-align: center;
     margin: 1em 0;
