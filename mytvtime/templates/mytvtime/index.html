@@ -84,6 +84,7 @@
 
                     axios.get('/get_watching_shows/')
                         .then(res => {
+                            console.log(res.data);
                             const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
                                 const hoursUntilNextEpisodeA = a.days * 24 + a.hours;
                                 const hoursUntilNextEpisodeB = b.days * 24 + b.hours;
@@ -226,7 +227,14 @@
                                             {show.countdown.days != null && show.countdown.hours != null && show.countdown.minutes != null ? (
                                                 <div>
                                                     <p className="show-season">S{show.season} E{show.episode}</p>
-                                                    {show.countdown ? <p className="countdown">{`${show.countdown.days}D ${show.countdown.hours}H ${show.countdown.minutes}M`}</p> : null}
+                                                    {show.countdown ? 
+                                                    (<div className="countdown">
+                                                        <ul>
+                                                            <li><span>{show.countdown.days}</span>Days</li>
+                                                            <li><span>{show.countdown.hours}</span>Hours</li>
+                                                            <li><span>{show.countdown.minutes}</span>Minutes</li>
+                                                        </ul>
+                                                    </div>): null}
                                                 </div>
                                             ) : (
                                                 <div>
