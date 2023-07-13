@@ -5,7 +5,7 @@
 .body-home-page {
     font-family: 'Roboto', sans-serif;
     background-color: #f3f3f3;
-    padding: 12px;
+    /* padding: 12px; */
     padding-top: 2em;
 }
 
@@ -113,7 +113,7 @@
     margin: 0;
     background-color: #f3f3f3;
     font-family: 'Roboto', sans-serif;
-    padding: 20px;
+    /* padding: 20px; */
     padding-top: 2.5em;
 }
 
@@ -194,7 +194,7 @@
 /* home page Watching Shows List */
 .watching-show-list {
     list-style-type: none;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
     background: no-repeat center center; 
     background-size: cover; /* Let the background image fill the entire element */
@@ -209,12 +209,12 @@
     border: 0px solid #ddd;
     margin: 0px 0;
     padding: 20px 10px 10px 20px; /* Adjust padding to shift text to the upper left corner */
-    text-align: left; /* Set text to align to the left */
-    color: #ffffff; /* Change text color */
-    font-size: 20px; /* Increase font size */
-    line-height: 0.5; /* Increase line height to improve readability */
-    font-weight: bold; /* Increase font weight */
-    height: 300px; /* Set a fixed height */
+    text-align: left; 
+    color: #ffffff; 
+    font-size: 20px; 
+    line-height: 0.5;
+    font-weight: bold; 
+    height: 300px; 
     overflow: hidden; /* Hide overflowing content */
     
 }
@@ -222,6 +222,18 @@
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
 }
+
+.watching-show-item .countdown {
+    font-size: 30px;
+    color: #ffffff;
+    /* background: rgba(0, 0, 0, 0.6); */
+    /* margin: 10px; */
+    /* padding: 10px; */
+    position: relative;
+    text-align: left; 
+    bottom: 0;
+}
+
 
 .watching-show-item button {
     position: absolute; /* Use absolute positioning */
