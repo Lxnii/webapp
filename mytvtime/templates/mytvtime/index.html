@@ -224,12 +224,12 @@
                                             <h2>{show.title}</h2>
                                             {show.countdown.days != null && show.countdown.hours != null && show.countdown.minutes != null ? (
                                                 <div>
-                                                    <p>S{show.season} E{show.episode}</p>
+                                                    <p className="show-season">S{show.season} E{show.episode}</p>
                                                     {show.countdown ? <p className="countdown">{`${show.countdown.days}D ${show.countdown.hours}H ${show.countdown.minutes}M`}</p> : null}
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <p>{show.status}</p>
+                                                    <p className="show-status">{show.status}</p>
                                                 </div>
                                             )}
                                             <button className="delete-button" onClick={() => this.handleDelete(show.trakt)}>Delete</button>
