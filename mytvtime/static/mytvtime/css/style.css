@@ -283,6 +283,7 @@
     border-radius: 5px;
     margin: 2em 0;
     text-align: center;
+    margin-top: 16em;
 }
 
 .user-login-prompt a {
@@ -304,7 +305,7 @@
 
 .login-form, .register-form {
     display: block;
-    max-width: 350px; 
+    max-width: 400px; 
     margin: 1em auto; 
     padding: 20px;
     border-radius: 25px;
