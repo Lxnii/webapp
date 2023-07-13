@@ -226,7 +226,7 @@ def get_show_images_from_tmdb(tmdb_id):
 def update_show_info(show):
     # This function updates a Show object with the latest information from the Trakt API
     show_details = get_show_details_from_trakt(show.trakt_id)
-    TMDb_id = show_details.get('ids', {}).get('tmdb')
+    # TMDb_id = show_details.get('ids', {}).get('tmdb')
     images_url = get_show_images_from_tmdb(show.tmdb_id)
     if images_url == None:
         images_url ={'poster_url': None, 'poster_w780_url': None, 'backdrop_url': None}
@@ -347,8 +347,8 @@ def get_watching_shows(request):
                 watching_show['days'] = days
                 watching_show['hours'] = hours
                 watching_show['minutes'] = minutes
+                watching_show['trakt_update_at'] = next_episode.updated_at
             watching_shows.append(watching_show)
-
         return JsonResponse({'watching_shows': watching_shows})
 
     else:

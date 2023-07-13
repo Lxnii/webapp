@@ -220,7 +220,7 @@
     
 }
 
-.watching-show-item h2, .watching-show-item p {
+/* .watching-show-item h2, .watching-show-item p {
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
 }
@@ -247,7 +247,9 @@
         font-size: 14px; 
     }
 
-} 
+}  */
+
+
 
 .watching-show-item button {
     position: absolute; /* Use absolute positioning */
@@ -273,7 +275,7 @@
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    border-radius: 25px; /* Add border radius to make the button more rounded */
+    border-radius: 25px; 
     transition: all 0.3s ease; /* Transition all properties for a smoother animation */
     cursor: pointer;
     margin-top: 10px;
@@ -301,12 +303,12 @@
 }
 
 .user-login-prompt a {
-    color: #0066cc;  /* Change the color of the login and register links to a dark blue */
+    color: #0066cc; 
     text-decoration: none;
 }
 
 .user-login-prompt a:hover {
-    color: #004c99;  /* Darken the color of the login and register links on hover */
+    color: #004c99; 
 }
 
 /* login and register page */
@@ -365,13 +367,54 @@
 }
 
 .register-form-hints {
-    line-height: 1.5;  /* Increase the line height */
+    line-height: 1.5; 
 }
 
 .errorlist {
-    list-style-type: none;  /* Remove bullet points */
-    padding-left: 0;  /* Remove default padding */
-    color: red;  /* Change text color to red */
-    font-size: 0.8em;  /* Decrease font size */
-    text-align: left;  /* Align text to left */
+    list-style-type: none; 
+    padding-left: 0; 
+    color: red; 
+    font-size: 0.8em;  
+    text-align: left;
 }
+
+
+/* Test Countdown Styles */
+
+.countdown {
+    text-align: center;
+    margin: 1em 0;
+  }
+  
+  .countdown ul {
+    display: inline-flex;
+    list-style: none;
+    padding: 0;
+    justify-content: center;
+  }
+  
+  .countdown ul li {
+    font-size: 0.8em;
+    list-style-type: none;
+    padding: 1em;
+    margin: 0.5em;
+    text-transform: uppercase;
+  }
+  
+  .countdown ul li span {
+    display: block;
+    font-size: 5em;
+    line-height: 1.4;
+  }
+  
+  @media all and (max-width: 768px) {
+    
+    .countdown ul li {
+      font-size: 0.7em;
+    }
+    
+    .countdown ul li span {
+      font-size: 3em;
+    }
+  }
+  
