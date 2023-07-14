@@ -7,15 +7,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.http import JsonResponse
-
 from configparser import ConfigParser
 from .models import Show, Watchlist, NextEpisode
 
 logger = logging.getLogger(__name__)
-
-# Create your views here.
-def index(request):
-    return render(request, 'mytvtime/index.html')
 
 def get_api_key(api_name):
     config = ConfigParser()
@@ -35,6 +30,9 @@ tmdb_headers = {
     'accept': 'application/json',
     'Authorization': tmdb_api_key
     }
+
+def index(request):
+    return render(request, 'mytvtime/index.html')
 
 def register(request):
     if request.method == 'POST':
@@ -62,42 +60,6 @@ def login(request):
 def logout(request):
     django_logout(request)
     return redirect('mytvtime:index')
-
-# def index(request):
-    # watching_shows = []
-    # if request.user.is_authenticated:
-    #     user = request.user.id
-    #     user_watchlist = Watchlist.objects.filter(user=user)
-    #     for watchlist_item in user_watchlist:
-    #         show_id = watchlist_item.show.trakt_id  # Extract trakt_id from the show attribute of the Watchlist object
-    #         show_details = get_show_details_from_trakt(show_id)
-    #         if show_details is None:  # Add this check
-    #             continue
-    #         # Calculate the days and hours until the next episode
-    #         next_episode = show_details.get('next_episode')
-    #         next_episode_time = None
-    #         days = None
-    #         hours = None
-    #         if next_episode is not None:  # And this check
-    #             next_episode_time = isoparse(next_episode.get('first_aired')) # now includes timezone information
-    #             now = datetime.now(timezone.utc)  # Corrected here
-    #             time_delta = next_episode_time - now
-    #             days = time_delta.days
-    #             hours = time_delta.seconds // 3600
-    #             # Adjustment for negative values of days and hours
-    #             if days < 0 or hours < 0:
-    #                 days = 0
-    #                 hours = 0
-    #         watching_show = {
-    #             'title': show_details.get('title'),
-    #             'season': next_episode.get('season') if next_episode else None,  # And check here
-    #             'episode': next_episode.get('number') if next_episode else None,  # And here
-    #             'days': days,
-    #             'hours': hours,
-    #             'status': show_details.get('status'),
-    #         }
-    #         watching_shows.append(watching_show)
-    # return render(request, 'mytvtime/index.html')
 
 def search_shows_on_trakt(query):
     # Set Trakt API parameters
@@ -260,9 +222,23 @@ def update_all_database_shows(request):
     # This view updates all shows in the database
     for show in Show.objects.all():
         update_show_info(show)
-
     # Return a success response
     return JsonResponse({"status": "success"})
+
+def auto_update_all_database_shows():
+    logger.info('Starting to update all database shows...')
+    shows = Show.objects.all()
+    for show in shows:
+        try:
+            update_show_info(show)
+        except Exception as e:
+            logger.info(f'Error updating show {show.trakt_id}: {e}')
+    logger.info(f'Finish updating the database data for all shows.')
+
+# def update_database_view(request):
+#     logging.debug("Received request for update_database_view")
+#     auto_update_all_database_shows()
+#     return JsonResponse({'status': 'success'})
 
 @login_required
 def update_user_watchlist_shows(request):
@@ -290,6 +266,7 @@ def add_show_to_watchlist(request, trakt_id):
                                                     year = selected_show_data.get('year'),
                                                     status = selected_show_data.get('status'),
                                                     overview = selected_show_data.get('overview'),
+                                                    trakt_updated_at = selected_show_data('updated_at'),
                                                     poster_url = images_url.get('poster_url'),
                                                     backdrop_url = images_url.get('backdrop_url'))
     show.users.add(request.user)
@@ -303,7 +280,7 @@ def add_show_to_watchlist(request, trakt_id):
             season = next_episode_details.get('season'),
             number = next_episode_details.get('number'),
             air_date = isoparse(next_episode_details.get('first_aired')),
-            updated_at = isoparse(next_episode_details.get('updated_at')))
+            trakt_updated_date = isoparse(next_episode_details.get('updated_at')))
         next_episode.save()
     # Create a new Watchlist entry for the current user and the selected show
     Watchlist.objects.get_or_create(user=request.user, show=show)
