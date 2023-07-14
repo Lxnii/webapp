@@ -50,12 +50,20 @@ def login(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            user = form.get_user()
-            django_login(request, user)
-            return redirect('mytvtime:index')
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                django_login(request, user)
+                return redirect('mytvtime:index')
+            else:
+                messages.error(request, 'Invalid username or password.')
+        else:
+            messages.error(request, 'Invalid username or password.')
     else:
         form = AuthenticationForm()
     return render(request, 'mytvtime/login.html', {'form': form})
+
 
 def logout(request):
     django_logout(request)
