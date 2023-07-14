@@ -11,20 +11,20 @@ from configparser import ConfigParser
 #     def __str__(self):
 #         return self.user.username
 
-def get_api_key(api_name):
-    config = ConfigParser()
-    config_file = os.path.join(os.path.dirname(__file__), '..', 'config.ini')
-    config.read(config_file)
-    return config.get(api_name, 'api_key')
+# def get_api_key(api_name):
+#     config = ConfigParser()
+#     config_file = os.path.join(os.path.dirname(__file__), '..', 'config.ini')
+#     config.read(config_file)
+#     return config.get(api_name, 'api_key')
 
-trakt_api_key = get_api_key('trakt')
-tmdb_api_key = get_api_key('tmdb')
+# trakt_api_key = get_api_key('trakt')
+# tmdb_api_key = get_api_key('tmdb')
 
-trakt_headers = {
-    'Content-Type': 'application/json',
-    'trakt-api-version': '2',
-    'trakt-api-key': trakt_api_key
-    }
+# trakt_headers = {
+#     'Content-Type': 'application/json',
+#     'trakt-api-version': '2',
+#     'trakt-api-key': trakt_api_key
+#     }
 
 class Show(models.Model):
     trakt_id = models.PositiveIntegerField(primary_key=True)
