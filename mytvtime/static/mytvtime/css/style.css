@@ -259,11 +259,11 @@
     position: absolute; /* Use absolute positioning */
     top: 12px; /* Place the button at the top of the element */
     right: 10px; /* Place the button to the right of the element */
-    padding: 10px 20px; /* Increase padding */
-    background-color: rgba(29, 29, 29, 0.2); /* Change background color */
+    padding: 10px 16px; /* Increase padding */
+    background-color: rgba(29, 29, 29, 0.288); /* Change background color */
     color: #ffffff; /* Change text color */
     border: none; /* Remove border */
-    border-radius: 10px; /* Add border radius */
+    border-radius: 16px; /* Add border radius */
     font-size: 14px; /* Change font size */
     cursor: pointer; /* Change cursor style */
 }
