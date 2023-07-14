@@ -39,7 +39,7 @@ class Show(models.Model):
     poster_url = models.URLField(blank=True, null=True)
     backdrop_url = models.URLField(blank=True, null=True)
     users = models.ManyToManyField(User, related_name="shows")
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
     # def refresh_from_api(self):
     #     trakt_api_url = f'https://api.trakt.tv/shows/{self.trakt_id}?extended=full'
     #     try:
@@ -87,7 +87,7 @@ class Episode(models.Model):
 class Watchlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     show = models.ForeignKey(Show, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
     
     class Meta:
         unique_together = ('user', 'show')
@@ -98,7 +98,7 @@ class Watchlist(models.Model):
 class Watched(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     episode = models.ForeignKey(Episode, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
     
     class Meta:
         unique_together = ('user', 'episode')
@@ -113,7 +113,7 @@ class NextEpisode(models.Model):
     number = models.IntegerField()
     air_date = models.DateTimeField(null=True, blank=True)
     trakt_updated_at = models.DateTimeField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
 
     
     # def refresh_from_api(self):
