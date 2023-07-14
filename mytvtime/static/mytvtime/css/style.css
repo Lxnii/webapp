@@ -4,7 +4,7 @@
 
 .body-home-page {
     font-family: 'Roboto', sans-serif;
-    background-color: #f3f3f3;
+    background-color: #e2e2e2;
     padding-top: 2.5em;
     margin: 0;
 }
@@ -112,7 +112,7 @@
     display: block;
     min-height: 100vh;
     margin: 0;
-    background-color: #f3f3f3;
+    background-color: #e2e2e2;
     font-family: 'Roboto', sans-serif;
     /* padding: 20px; */
     padding-top: 2.5em;
@@ -203,20 +203,25 @@
 
 .watching-show-item {
     position: relative; /* Set positioning, to add an overlay within */
-    /* background: no-repeat center center;  */
+    background: no-repeat center center; 
     background-size: cover;
     background-position: center;
     background-color: rgba(242, 242, 242, 0.5); /* Set semi-transparent background color */
     border: 0px solid #ddd;
-    margin: 0px 0;
     padding: 20px 10px 10px 20px; /* Adjust padding to shift text to the upper left corner */
     text-align: left; 
     color: #ffffff; 
-    /* font-size: 20px;  */
     line-height: 0.5;
     font-weight: bold; 
     height: 300px; 
     overflow: hidden; /* Hide overflowing content */
+    
+}
+.watching-show-item h2 {
+    text-align: left;
+    margin-bottom: 1em;
+    margin-top: 1em;
+    font-size: 20px; 
     
 }
 
@@ -398,7 +403,7 @@
     margin: 0.5em;
     text-transform: uppercase;
   }
-  
+
   .countdown ul li span {
     display: block;
     font-size: 5em;
@@ -413,6 +418,13 @@
     .watching-show-item {
         padding: 0px 5px 5px 10px;
         height: 180px;
+    }
+
+    .watching-show-item h2 {
+        /* text-align: left; */
+        /* margin-bottom: 0.8em; */
+        /* margin-top: 0.8em; */
+        font-size: 18px;  
     }
 
     .countdown ul li {
