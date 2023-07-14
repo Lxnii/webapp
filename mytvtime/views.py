@@ -333,7 +333,7 @@ def get_watching_shows(request):
                 watching_show['days'] = days
                 watching_show['hours'] = hours
                 watching_show['minutes'] = minutes
-                watching_show['trakt_update_at'] = next_episode.updated_at
+                watching_show['trakt_update_at'] = next_episode.trakt_updated_at
             watching_shows.append(watching_show)
         return JsonResponse({'watching_shows': watching_shows})
 
