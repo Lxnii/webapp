@@ -35,10 +35,11 @@ class Show(models.Model):
     year = models.PositiveIntegerField(blank=True, null=True)
     status = models.CharField(max_length=255, blank=True, null=True)
     overview = models.TextField(blank=True, null=True)
+    trakt_updated_at = models.DateTimeField(null=True, blank=True)
     poster_url = models.URLField(blank=True, null=True)
     backdrop_url = models.URLField(blank=True, null=True)
     users = models.ManyToManyField(User, related_name="shows")
-    
+    timestamp = models.DateTimeField(auto_now_add=True)
     # def refresh_from_api(self):
     #     trakt_api_url = f'https://api.trakt.tv/shows/{self.trakt_id}?extended=full'
     #     try:
@@ -111,7 +112,9 @@ class NextEpisode(models.Model):
     season = models.IntegerField()
     number = models.IntegerField()
     air_date = models.DateTimeField(null=True, blank=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    trakt_updated_at = models.DateTimeField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
     
     # def refresh_from_api(self):
     #         trakt_api_url = f'https://api.trakt.tv/shows/{self.show.trakt_id}/next_episode?extended=full'
