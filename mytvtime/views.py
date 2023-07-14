@@ -201,6 +201,7 @@ def update_show_info(show):
     show.slug = show_details.get('ids', {}).get('slug')
     show.status = show_details.get('status')
     show.overview = show_details.get('overview')
+    show.trakt_updated_at = show_details.get('updated_at')
     show.poster_url = images_url.get('poster_url')
     show.backdrop_url = images_url.get('backdrop_url')
 # Get the next episode details
@@ -333,7 +334,7 @@ def get_watching_shows(request):
                 watching_show['days'] = days
                 watching_show['hours'] = hours
                 watching_show['minutes'] = minutes
-                watching_show['trakt_update_at'] = next_episode.trakt_updated_at
+                watching_show['trakt_next_episode_update_date'] = next_episode.trakt_updated_at
             watching_shows.append(watching_show)
         return JsonResponse({'watching_shows': watching_shows})
 
