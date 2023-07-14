@@ -263,7 +263,7 @@
     cursor: pointer; /* Change cursor style */
 }
 
-.update-database-button {
+.refresh-list-button {
     margin-top: 50px;
     margin-bottom: 50px;
     background-color: #8ab4ef; 
@@ -281,12 +281,12 @@
     opacity: 0.8;
 }
 
-.update-database-button:hover {
+.refresh-list-button:hover {
     opacity: 1;
     transform: scale(1); /* Increase the size of the button when hovered */
 }
 
-.update-database-button:active {
+.refresh-list-button:active {
     opacity: 1;
     transform: scale(0.95); /* Decrease the size of the button when clicked */
 }
