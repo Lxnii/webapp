@@ -275,7 +275,7 @@ def add_show_to_watchlist(request, trakt_id):
                                                     year = selected_show_data.get('year'),
                                                     status = selected_show_data.get('status'),
                                                     overview = selected_show_data.get('overview'),
-                                                    trakt_updated_at = selected_show_data('updated_at'),
+                                                    trakt_updated_at = selected_show_data.get('updated_at'),
                                                     poster_url = images_url.get('poster_url'),
                                                     backdrop_url = images_url.get('backdrop_url'))
     show.users.add(request.user)
