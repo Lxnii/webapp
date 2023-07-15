@@ -125,7 +125,8 @@
 }
 
 .fa-search {
-    color: #1292ee; /* The gray icon */
+    color: #1292ee;
+    font-size: 16px;
 }
 
 
