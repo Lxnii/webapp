@@ -125,7 +125,8 @@
 }
 
 .fa-search {
-    color: #1292ee;
+    /* color: #1292ee; */
+    color: #1B98F5;
     font-size: 16px;
 }
 
@@ -311,7 +312,8 @@
 .refresh-list-button {
     margin-top: 50px;
     margin-bottom: 50px;
-    background-color: #8ab4ef; 
+    /* background-color: #8ab4ef;  */
+    background-color: #12B0E8; 
     border: none;
     color: white;
     padding: 10px;
@@ -347,12 +349,14 @@
 }
 
 .user-login-prompt a {
-    color: #0066cc; 
+    color: #1B98F5; 
     text-decoration: none;
 }
 
 .user-login-prompt a:hover {
-    color: #004c99; 
+    /* color: #004c99;  */
+    color: #0067ce; 
+
 }
 
 /* login and register page */
