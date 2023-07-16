@@ -1,4 +1,4 @@
-import os, sys, requests, json, logging
+import os, sys, requests, json, logging, dateutil.parser
 from django.utils import timezone
 from dateutil.parser import isoparse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -295,60 +295,6 @@ def add_show_to_watchlist(request, trakt_id):
     Watchlist.objects.get_or_create(user=request.user, show=show)
     return redirect('mytvtime:index')
 
-# @login_required
-# def get_watching_shows(request):
-#     if request.user.is_authenticated:
-#         user_id = request.user.id
-#         watching_shows = []
-#         user_watchlist = Watchlist.objects.filter(user=user_id)
-#         for watchlist_item in user_watchlist:
-#             show = watchlist_item.show
-
-#             # Get the next episode if it exists
-#             next_episode = show.next_episode.first() if show.next_episode.exists() else None
-
-#             # Initialize watching_show dictionary
-#             watching_show = {
-#                 'title': show.title,
-#                 'trakt': show.trakt_id,
-#                 'imdb': show.imdb_id,
-#                 'tmdb': show.tmdb_id,
-#                 'slug': show.slug,
-#                 'season': next_episode.season if next_episode else None,
-#                 'episode': next_episode.number if next_episode else None,
-#                 'days': None,
-#                 'hours': None,
-#                 'minutes': None,
-#                 'status': show.status.capitalize(),
-#                 'poster_url': show.poster_url,
-#                 'backdrop_url': show.backdrop_url
-#             }
-
-#             # Calculate the days and hours until the next episode
-#             if next_episode and next_episode.air_date is not None:
-#                 next_episode_time = next_episode.air_date
-#                 now = timezone.now()  # get current time with timezone
-#                 time_delta = next_episode_time - now
-#                 days = time_delta.days
-#                 hours = time_delta.seconds // 3600
-#                 minutes = (time_delta.seconds // 60) % 60
-#                 # minutes = time_delta.total_seconds() // 60 % 60
-#                 # Adjustment for negative values of days, hours and minutes.
-#                 if days < 0 or hours < 0:
-#                     days = 0
-#                     hours = 0
-#                     minutes = 0
-#                 # Update 'days' and 'hours' fields
-#                 watching_show['days'] = days
-#                 watching_show['hours'] = hours
-#                 watching_show['minutes'] = minutes
-#                 watching_show['trakt_next_episode_update_date'] = next_episode.trakt_updated_at
-#             watching_shows.append(watching_show)
-#         return JsonResponse({'watching_shows': watching_shows})
-
-#     else:
-#         # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
-#         return JsonResponse({'unauthenticated': True}, safe=False)
 
 @login_required
 def get_watching_shows(request):
@@ -361,6 +307,21 @@ def get_watching_shows(request):
 
             # Get the next episode if it exists
             next_episode = show.next_episode.first() if show.next_episode.exists() else None
+
+            # If the next episode has aired, update the show and next episode details
+            if next_episode and next_episode.air_date and next_episode.air_date < timezone.now():
+                show_details = get_show_details_from_trakt(show.trakt_id)
+
+                # Update the next episode info in the database
+                next_episode_details = show_details.get('next_episode')
+                if next_episode_details:
+                    next_episode.title = next_episode_details.get('title')
+                    next_episode.season = next_episode_details.get('season')
+                    next_episode.number = next_episode_details.get('number')
+                    next_episode.air_date = dateutil.parser.parse(next_episode_details.get('first_aired'))
+                    next_episode.save()
+                # Get the updated next episode
+                next_episode = show.next_episode.first() if show.next_episode.exists() else None
 
             # Initialize watching_show dictionary
             watching_show = {
@@ -387,11 +348,7 @@ def get_watching_shows(request):
                 days = time_delta.days
                 hours = time_delta.seconds // 3600
                 minutes = (time_delta.seconds // 60) % 60
-                # Adjustment for negative values of days, hours and minutes.
-                if days < 0 or hours < 0:
-                    days = 0
-                    hours = 0
-                    minutes = 0
+
                 # Update 'days' and 'hours' fields
                 watching_show['days'] = days
                 watching_show['hours'] = hours
