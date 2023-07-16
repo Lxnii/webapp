@@ -289,7 +289,7 @@ def add_show_to_watchlist(request, trakt_id):
             season = next_episode_details.get('season'),
             number = next_episode_details.get('number'),
             air_date = isoparse(next_episode_details.get('first_aired')),
-            trakt_updated_date = isoparse(next_episode_details.get('updated_at')))
+            trakt_updated_at = isoparse(next_episode_details.get('updated_at')))
         next_episode.save()
     # Create a new Watchlist entry for the current user and the selected show
     Watchlist.objects.get_or_create(user=request.user, show=show)
