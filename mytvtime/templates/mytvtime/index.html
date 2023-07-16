@@ -86,12 +86,14 @@
                     axios.get('/get_watching_shows/')
                         .then(res => {
                             console.log(res.data);
-                            const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
-                            const minutesUntilNextEpisodeA = a.days * 24 * 60 + a.hours * 60 + a.minutes;
-                            const minutesUntilNextEpisodeB = b.days * 24 * 60 + b.hours * 60 + b.minutes;
-                            return (minutesUntilNextEpisodeA || Infinity) - (minutesUntilNextEpisodeB || Infinity);
-                        }) : [];
+                        // Sort the watchlist time on the front end.
+                        //     const watchingShows = res.data.watching_shows ? res.data.watching_shows.sort((a, b) => {
+                        //     const minutesUntilNextEpisodeA = a.days * 24 * 60 + a.hours * 60 + a.minutes;
+                        //     const minutesUntilNextEpisodeB = b.days * 24 * 60 + b.hours * 60 + b.minutes;
+                        //     return (minutesUntilNextEpisodeA || Infinity) - (minutesUntilNextEpisodeB || Infinity);
+                        // }) : [];
 
+                            const watchingShows = res.data.watching_shows || [];
                             // add countdown to each show
                             for (const show of watchingShows) {
                                 show.countdown = {
