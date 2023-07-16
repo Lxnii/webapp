@@ -1,4 +1,4 @@
-import os, sys, requests, json, logging, dateutil.parser
+import os, sys, requests, json, logging
 from django.utils import timezone
 from dateutil.parser import isoparse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -212,7 +212,7 @@ def update_show_info(show):
     show.trakt_updated_at = show_details.get('updated_at')
     show.poster_url = images_url.get('poster_url')
     show.backdrop_url = images_url.get('backdrop_url')
-# Get the next episode details
+    # Get the next episode details
     next_episode_details = show_details.get('next_episode')
     if next_episode_details:
         try:
@@ -221,7 +221,7 @@ def update_show_info(show):
             next_episode.season = next_episode_details.get('season')
             next_episode.number = next_episode_details.get('number')
             next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
-            next_episode.updated_at = isoparse(next_episode_details.get('updated_at'))
+            next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
             next_episode.save()
         except Exception as e:
             print(e)
@@ -311,14 +311,17 @@ def get_watching_shows(request):
             # If the next episode has aired, update the show and next episode details
             if next_episode and next_episode.air_date and next_episode.air_date < timezone.now():
                 show_details = get_show_details_from_trakt(show.trakt_id)
-
+                new_show_datailes = show_details
+                logger.info('找到过时的下一集时间show,并从trakt更新')
                 # Update the next episode info in the database
                 next_episode_details = show_details.get('next_episode')
                 if next_episode_details:
                     next_episode.title = next_episode_details.get('title')
                     next_episode.season = next_episode_details.get('season')
                     next_episode.number = next_episode_details.get('number')
-                    next_episode.air_date = dateutil.parser.parse(next_episode_details.get('first_aired'))
+                    next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
+                    next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+                    test_show_next_episode_trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
                     next_episode.save()
                 # Get the updated next episode
                 next_episode = show.next_episode.first() if show.next_episode.exists() else None
@@ -363,14 +366,14 @@ def get_watching_shows(request):
             Returning series are put at the front, ended shows are put at the end,
             and other shows are sorted by their next episode air time.
             """
-            if show['status'].lower() == 'returning series':
-                return float('-inf')  # Returning series are sorted to the front
+            if show['status'].lower() == 'returning series' and show['days'] is None:
+                return (1e10, show['title'])
             elif show['status'].lower() == 'ended':
-                return float('inf')  # Ended shows are sorted to the end
+                return (2 * 1e10, show['title'])
             elif show['days'] is not None:
-                return show['days'] * 24 * 60 + show['hours'] * 60 + show['minutes']  # Other shows are sorted by their next episode air time
+                return ((show['days'] * 24 * 60 + show['hours'] * 60 + show['minutes']), show['title'])
             else:
-                return float('inf')  # Other shows without a next episode are sorted to the end
+                return (2 * 1e10, show['title'])  # Other shows without a next episode are sorted to the end
 
         watching_shows = sorted(watching_shows, key=sort_shows)
 
@@ -379,7 +382,6 @@ def get_watching_shows(request):
     else:
         # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
         return JsonResponse({'unauthenticated': True}, safe=False)
-
 
 @login_required
 def remove_show_from_watchlist(request):
