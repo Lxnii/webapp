@@ -295,6 +295,61 @@ def add_show_to_watchlist(request, trakt_id):
     Watchlist.objects.get_or_create(user=request.user, show=show)
     return redirect('mytvtime:index')
 
+# @login_required
+# def get_watching_shows(request):
+#     if request.user.is_authenticated:
+#         user_id = request.user.id
+#         watching_shows = []
+#         user_watchlist = Watchlist.objects.filter(user=user_id)
+#         for watchlist_item in user_watchlist:
+#             show = watchlist_item.show
+
+#             # Get the next episode if it exists
+#             next_episode = show.next_episode.first() if show.next_episode.exists() else None
+
+#             # Initialize watching_show dictionary
+#             watching_show = {
+#                 'title': show.title,
+#                 'trakt': show.trakt_id,
+#                 'imdb': show.imdb_id,
+#                 'tmdb': show.tmdb_id,
+#                 'slug': show.slug,
+#                 'season': next_episode.season if next_episode else None,
+#                 'episode': next_episode.number if next_episode else None,
+#                 'days': None,
+#                 'hours': None,
+#                 'minutes': None,
+#                 'status': show.status.capitalize(),
+#                 'poster_url': show.poster_url,
+#                 'backdrop_url': show.backdrop_url
+#             }
+
+#             # Calculate the days and hours until the next episode
+#             if next_episode and next_episode.air_date is not None:
+#                 next_episode_time = next_episode.air_date
+#                 now = timezone.now()  # get current time with timezone
+#                 time_delta = next_episode_time - now
+#                 days = time_delta.days
+#                 hours = time_delta.seconds // 3600
+#                 minutes = (time_delta.seconds // 60) % 60
+#                 # minutes = time_delta.total_seconds() // 60 % 60
+#                 # Adjustment for negative values of days, hours and minutes.
+#                 if days < 0 or hours < 0:
+#                     days = 0
+#                     hours = 0
+#                     minutes = 0
+#                 # Update 'days' and 'hours' fields
+#                 watching_show['days'] = days
+#                 watching_show['hours'] = hours
+#                 watching_show['minutes'] = minutes
+#                 watching_show['trakt_next_episode_update_date'] = next_episode.trakt_updated_at
+#             watching_shows.append(watching_show)
+#         return JsonResponse({'watching_shows': watching_shows})
+
+#     else:
+#         # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
+#         return JsonResponse({'unauthenticated': True}, safe=False)
+
 @login_required
 def get_watching_shows(request):
     if request.user.is_authenticated:
@@ -332,7 +387,6 @@ def get_watching_shows(request):
                 days = time_delta.days
                 hours = time_delta.seconds // 3600
                 minutes = (time_delta.seconds // 60) % 60
-                # minutes = time_delta.total_seconds() // 60 % 60
                 # Adjustment for negative values of days, hours and minutes.
                 if days < 0 or hours < 0:
                     days = 0
@@ -344,6 +398,25 @@ def get_watching_shows(request):
                 watching_show['minutes'] = minutes
                 watching_show['trakt_next_episode_update_date'] = next_episode.trakt_updated_at
             watching_shows.append(watching_show)
+
+        # Sort user's watchlist to front end.
+        def sort_shows(show):
+            """
+            Custom sorting function for shows.
+            Returning series are put at the front, ended shows are put at the end,
+            and other shows are sorted by their next episode air time.
+            """
+            if show['status'].lower() == 'returning series':
+                return float('-inf')  # Returning series are sorted to the front
+            elif show['status'].lower() == 'ended':
+                return float('inf')  # Ended shows are sorted to the end
+            elif show['days'] is not None:
+                return show['days'] * 24 * 60 + show['hours'] * 60 + show['minutes']  # Other shows are sorted by their next episode air time
+            else:
+                return float('inf')  # Other shows without a next episode are sorted to the end
+
+        watching_shows = sorted(watching_shows, key=sort_shows)
+
         return JsonResponse({'watching_shows': watching_shows})
 
     else:
