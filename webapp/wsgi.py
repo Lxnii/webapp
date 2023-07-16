@@ -15,4 +15,4 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings')
 
 application = get_wsgi_application()
 
-start_jobs()
+# start_jobs()
