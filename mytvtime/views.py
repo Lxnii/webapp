@@ -216,7 +216,7 @@ def update_show_info(show):
     next_episode_details = show_details.get('next_episode')
     if next_episode_details:
         try:
-            next_episode, created = NextEpisode.objects.get_or_create(show=show)
+            next_episode, created = NextEpisode.objects.update_or_create(show=show)
             next_episode.title = next_episode_details.get('title')
             next_episode.season = next_episode_details.get('season')
             next_episode.number = next_episode_details.get('number')
@@ -283,7 +283,7 @@ def add_show_to_watchlist(request, trakt_id):
     next_episode_details = selected_show_data.get('next_episode')
 
     if next_episode_details:
-        next_episode, created = NextEpisode.objects.get_or_create(
+        next_episode, created = NextEpisode.objects.update_or_create(
             show=show,
             title = next_episode_details.get('title'),
             season = next_episode_details.get('season'),
