@@ -224,7 +224,7 @@ def update_show_info(show):
             next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
             next_episode.save()
         except Exception as e:
-            print(e)
+            logger.info(f'Error updating show_NextEpisode {show.slug}, id: {show.trakt_id}, error: {e}')
     show.save()
 
 def update_all_database_shows(request):
@@ -267,29 +267,30 @@ def add_show_to_watchlist(request, trakt_id):
     if images_url == None:
         images_url ={'poster_url': None, 'poster_w780_url': None, 'backdrop_url': None}
     # Get or create the Show object based on the Trakt ID
-    show, created = Show.objects.update_or_create(trakt_id=selected_show_data.get('ids', {}).get('trakt'),
-                                                    imdb_id = selected_show_data.get('ids', {}).get('imdb'),
-                                                    tmdb_id = selected_show_data.get('ids', {}).get('tmdb'),
-                                                    title = selected_show_data.get('title'),
-                                                    slug = selected_show_data.get('ids', {}).get('slug'),
-                                                    year = selected_show_data.get('year'),
-                                                    status = selected_show_data.get('status'),
-                                                    overview = selected_show_data.get('overview'),
-                                                    trakt_updated_at = selected_show_data.get('updated_at'),
-                                                    poster_url = images_url.get('poster_url'),
-                                                    backdrop_url = images_url.get('backdrop_url'))
+    show, created = Show.objects.update_or_create(trakt_id=selected_show_data.get('ids').get('trakt'),
+        defaults={
+            'imdb_id': selected_show_data.get('ids', {}).get('imdb'),
+            'tmdb_id': selected_show_data.get('ids', {}).get('tmdb'),
+            'title': selected_show_data.get('title'),
+            'slug': selected_show_data.get('ids', {}).get('slug'),
+            'year': selected_show_data.get('year'),
+            'status': selected_show_data.get('status'),
+            'overview': selected_show_data.get('overview'),
+            'trakt_updated_at': selected_show_data.get('updated_at'),
+            'poster_url': images_url.get('poster_url'),
+            'backdrop_url': images_url.get('backdrop_url')})
     show.users.add(request.user)
     show.save()
     next_episode_details = selected_show_data.get('next_episode')
 
     if next_episode_details:
-        next_episode, created = NextEpisode.objects.update_or_create(
-            show=show,
-            title = next_episode_details.get('title'),
-            season = next_episode_details.get('season'),
-            number = next_episode_details.get('number'),
-            air_date = isoparse(next_episode_details.get('first_aired')),
-            trakt_updated_at = isoparse(next_episode_details.get('updated_at')))
+        next_episode, created = NextEpisode.objects.update_or_create(show=show,
+            defaults={
+                'title': next_episode_details.get('title'),
+                'season': next_episode_details.get('season'),
+                'number': next_episode_details.get('number'),
+                'air_date': isoparse(next_episode_details.get('first_aired')),
+                'trakt_updated_at': isoparse(next_episode_details.get('updated_at'))})
         next_episode.save()
     # Create a new Watchlist entry for the current user and the selected show
     Watchlist.objects.get_or_create(user=request.user, show=show)
@@ -321,7 +322,7 @@ def get_watching_shows(request):
                     next_episode.number = next_episode_details.get('number')
                     next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
                     next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
-                    test_show_next_episode_trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+                    # test_show_next_episode_trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
                     next_episode.save()
                 # Get the updated next episode
                 next_episode = show.next_episode.first() if show.next_episode.exists() else None
