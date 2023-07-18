@@ -342,7 +342,7 @@ def get_watching_shows(request):
                 'days': None,
                 'hours': None,
                 'minutes': None,
-                'status': show.status.capitalize(),
+                'status': 'Returning' if show.status == 'returning series' else show.status.capitalize(),
                 'poster_url': show.poster_url,
                 'backdrop_url': show.backdrop_url
             }
