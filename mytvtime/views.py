@@ -225,6 +225,9 @@ def update_show_info(show):
             next_episode.save()
         except Exception as e:
             logger.info(f'Error updating show_NextEpisode {show.slug}, id: {show.trakt_id}, error: {e}')
+    else:
+    # If no next episode details available, delete the existing NextEpisode object from the database
+        NextEpisode.objects.filter(show=show).delete()
     show.save()
 
 def update_all_database_shows(request):
