@@ -244,6 +244,29 @@
     flex-direction: column;
     align-items: stretch;
 }
+.watching-show-list-item-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.watching-show-list-item-background::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.watching-show-list-item-content {
+    position: relative;
+}
 
 .watching-show-item {
     position: relative;
