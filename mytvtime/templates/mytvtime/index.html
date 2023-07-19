@@ -229,27 +229,31 @@
                             <div className="watching-show-list-container">
                                 <ul className="watching-show-list">
                                     {this.state.watchingShows.map(show =>
-                                        <li key={show.title} className="watching-show-item" style={{
-                                            backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
-                                            <h2>{show.title}</h2>
-                                            {show.countdown.days != null && show.countdown.hours != null && show.countdown.minutes != null ? (
-                                                <>
-                                                    <p className="show-season">S{show.season} E{show.episode}</p>
-                                                    {show.countdown ? 
-                                                    (<div className="countdown">
-                                                        <ul>
-                                                            <li><span>{show.countdown.days}</span>Days</li>
-                                                            <li><span>{show.countdown.hours}</span>Hours</li>
-                                                            <li><span>{show.countdown.minutes}</span>Minutes</li>
-                                                        </ul>
-                                                    </div>): null}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <p className="show-status">{show.status}</p>
-                                                </>
-                                            )}
-                                            <button className="delete-button" onClick={() => this.handleDelete(show.trakt)}>Delete</button>
+                                        <li key={show.title} className="watching-show-item">
+                                            <div className="watching-show-list-item-background" style={{
+                                                backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
+                                            </div>
+                                            <div className="watching-show-list-item-content">
+                                                <h2>{show.title}</h2>
+                                                {show.countdown.days != null && show.countdown.hours != null && show.countdown.minutes != null ? (
+                                                    <>
+                                                        <p className="show-season">S{show.season} E{show.episode}</p>
+                                                        {show.countdown ? 
+                                                        (<div className="countdown">
+                                                            <ul>
+                                                                <li><span>{show.countdown.days}</span>Days</li>
+                                                                <li><span>{show.countdown.hours}</span>Hours</li>
+                                                                <li><span>{show.countdown.minutes}</span>Minutes</li>
+                                                            </ul>
+                                                        </div>): null}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <p className="show-status">{show.status}</p>
+                                                    </>
+                                                )}
+                                                <button className="delete-button" onClick={() => this.handleDelete(show.trakt)}>Delete</button>
+                                            </div>
                                         </li>
                                     )}
                                 </ul>
