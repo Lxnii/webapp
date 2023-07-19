@@ -285,7 +285,7 @@
 }
 
 .refresh-icon {
-    font-size: 20px; 
+    font-size: 24px; 
     color: #ffffff; 
     transition: transform 0.3s ease;
 }
@@ -296,7 +296,7 @@
     align-items: center;
     margin-top: 50px;
     margin-bottom: 50px;
-    background-color: #12B0E8;
+    background-color: #1B98F5;
     border: none;
     color: white;
     padding: 10px;
@@ -304,12 +304,15 @@
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    border-radius: 25px; 
-    transition: all 0.3s ease; /* Transition all properties for a smoother animation */
+    border-radius: 50%; 
+    width: 50px;
+    height: 50px;
+    transition: all 0.3s ease;
     cursor: pointer;
     margin-top: 10px;
     opacity: 0.8;
 }
+
 
 .refresh-list-button:hover {
     opacity: 1;
