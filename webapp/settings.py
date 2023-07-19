@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from configparser import RawConfigParser
+
+config = RawConfigParser()
+config.read('config.ini')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-p&_9^3!!$%9hlaq+btuy0#6ngs!3js5$4a!5ppgdftob@rviw#'
+SECRET_KEY = config.get('django', 'secret_key')
+
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY is not set in config.ini.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
