@@ -53,6 +53,11 @@
     background: #ffffff;
     box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
 }
+/* @media screen and (max-width: 1300px) {
+    .search-box {
+        width: 88%;
+    }
+} */
 
 @media screen and (min-width: 601px) and (max-width: 1050px) {
     .search-box {
@@ -76,6 +81,27 @@
     outline: none;
     background: transparent;
 }
+
+/* .search-box button {
+    width: 85px;
+    height: 40px;
+    font-size: 1em;
+    padding: 0;
+    border: none;
+    border-radius: 0 25px 25px 0;
+    background: linear-gradient(to right, rgba(0, 180, 255, 1), rgba(0, 100, 255, 1));
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    outline: none;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+} */
+
+/* .search-box button:hover {
+    background: linear-gradient(to right, rgba(0, 160, 255, 1), rgba(0, 80, 255, 1));
+} */
 
 .search-box button {
     width: 40px; 
@@ -208,61 +234,30 @@
 }
 
 /* home page Watching Shows List */
-/* .watching-show-list {
-    list-style-type: none;
-    margin: 0 auto;
-    padding: 0;
-    background: no-repeat center center; 
-    background-size: cover; 
-}
-
-.watching-show-item {
-    position: relative; 
-    background: no-repeat center center; 
-    background-size: cover;
-    background-position: center;
-    background-color: rgba(242, 242, 242, 0.5); 
-    border: 0px solid #ddd;
-    padding: 20px 10px 10px 20px; 
-    text-align: left; 
-    color: #ffffff; 
-    line-height: 0.5;
-    font-weight: bold; 
-    height: 300px; 
-    overflow: hidden; 
-    
-} */
-
-/* home page Watching Shows List */
 .watching-show-list {
     list-style-type: none;
     margin: 0 auto;
     padding: 0;
     background: no-repeat center center; 
-    background-size: cover;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    background-size: cover; /* Let the background image fill the entire element */
 }
 
 .watching-show-item {
-    position: relative;
+    position: relative; /* Set positioning, to add an overlay within */
     background: no-repeat center center; 
     background-size: cover;
     background-position: center;
-    background-color: rgba(242, 242, 242, 0.5);
+    background-color: rgba(242, 242, 242, 0.5); /* Set semi-transparent background color */
     border: 0px solid #ddd;
-    padding: 20px 20px 20px 20px;
+    padding: 20px 10px 10px 20px; /* Adjust padding to shift text to the upper left corner */
     text-align: left; 
     color: #ffffff; 
     line-height: 0.5;
-    /* font-weight: bold;  */
-    height: 300px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    font-weight: bold; 
+    height: 300px; 
+    overflow: hidden; /* Hide overflowing content */
+    
 }
-
 .watching-show-item h2 {
     text-align: left;
     margin-bottom: 1em;
@@ -270,6 +265,36 @@
     font-size: 20px; 
     
 }
+
+/* .watching-show-item h2, .watching-show-item p {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+}
+
+.watching-show-item h2, .countdown {
+    font-size: 30px; 
+    position: relative;
+    text-align: left; 
+    bottom: 0;
+}
+.watching-show-item .show-season, .show-status {
+    font-size: 20px; 
+}
+
+@media screen and (max-width: 1300px) {
+    .watching-show-item {
+        padding: 0px 5px 5px 10px;
+        height: 180px;
+    }
+    .watching-show-item h2, .countdown{
+        font-size: 18px; 
+    }
+    .watching-show-item .show-season, .show-statusn {
+        font-size: 14px; 
+    }
+
+}  */
+
 
 .watching-show-item button {
     position: absolute; /* Use absolute positioning */
@@ -283,6 +308,34 @@
     font-size: 14px; /* Change font size */
     cursor: pointer; /* Change cursor style */
 }
+
+/* .refresh-list-button {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    background-color: #12B0E8; 
+    border: none;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    border-radius: 25px; 
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-top: 10px;
+    opacity: 0.8;
+}
+
+.refresh-list-button:hover {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.refresh-list-button:active {
+    opacity: 1;
+    transform: scale(0.95); 
+} */
 
 .refresh-icon {
     font-size: 20px; 
