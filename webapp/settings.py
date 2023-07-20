@@ -9,12 +9,14 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from configparser import RawConfigParser
 
+current_path = os.path.abspath(os.path.dirname(__file__))
+config_file = os.path.join(current_path, '..', 'config.ini')
 config = RawConfigParser()
-config.read('config.ini')
+config.read(config_file)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
