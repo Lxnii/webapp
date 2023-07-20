@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 def get_api_key(api_name):
     config = ConfigParser()
-    config_file = os.path.join(os.path.dirname(__file__), '..', 'config.ini')
+    current_path = os.path.abspath(os.path.dirname(__file__))
+    config_file = os.path.join(current_path, '..', 'config.ini')
     config.read(config_file)
     return config.get(api_name, 'api_key')
 
