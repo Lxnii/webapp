@@ -83,12 +83,12 @@
             
                 React.useEffect(() => {
                     setIsAuthenticated(isAuthenticatedStatus);
-            
+
                     if (!isAuthenticatedStatus) {
                         setIsLoading(false);
                         return;
                     }
-            
+
                     axios.get('/get_watching_shows/')
                         .then(res => {
                             const watchingShows = res.data.watching_shows || [];
@@ -99,25 +99,25 @@
                                     minutes: show.minutes
                                 };
                             }
-            
                             setWatchingShows(watchingShows);
                             setIsLoading(false);
-            
+
+                            // Start the interval
                             countdownInterval.current = setInterval(updateCountdowns, 60000);
                         })
                         .catch(error => {
                             console.error(error);
                             setIsLoading(false);
                         });
-            
+
                     return () => {
                         if (countdownInterval.current) {
                             clearInterval(countdownInterval.current);
                             countdownInterval.current = null;
                         }
                     };
-                }, []);
-            
+                }, []);  
+                                            
                 function updateCountdowns() {
                     setWatchingShows(prevWatchingShows => {
                         const newWatchingShows = [...prevWatchingShows];
