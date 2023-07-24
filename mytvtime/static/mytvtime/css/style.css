@@ -448,33 +448,33 @@
 .countdown {
     text-align: center;
     /* margin: 1em 0; */
-  }
+}
   
-  .countdown ul {
+.countdown ul {
     display: inline-flex;
     list-style: none;
     padding: 0;
     justify-content: center;
-  }
+}
   
-  .countdown ul li {
+.countdown ul li {
     font-size: 0.8em;
     list-style-type: none;
     padding: 1em;
     margin: 0.5em;
     text-transform: uppercase;
-  }
+}
 
-  .countdown ul li span {
+.countdown ul li span {
     display: block;
     font-size: 5em;
     line-height: 1.4;
-  }
+}
   
-  @media all and (max-width: 1300px) {
+@media all and (max-width: 1300px) {
     .show-season {
         margin: 0;
-      }
+    }
 
     .watching-show-item {
         padding: 0px 5px 5px 10px;
@@ -496,5 +496,19 @@
     .countdown ul li span {
       font-size: 3em;
     }
+}
+  
+.fade-in {
+    animation: fadeIn ease 1s;
+    -webkit-animation: fadeIn ease 1s;
+    -moz-animation: fadeIn ease 1s;
+    -o-animation: fadeIn ease 1s;
+    -ms-animation: fadeIn ease 1s;
+    animation-fill-mode: backwards;
   }
+  
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
   

@@ -71,16 +71,17 @@
                 const [isLoading, setIsLoading] = React.useState(true);
                 const [isAuthenticated, setIsAuthenticated] = React.useState(false);
                 const [isUpdating, setIsUpdating] = React.useState(false);
-            
+                const [fadeIn, setFadeIn] = React.useState(false);  // New state variable for fade-in effect
+
                 const countdownInterval = React.useRef(null);
-            
+
                 const urlDataElement = document.getElementById('url-data');
                 const loginUrl = urlDataElement.getAttribute('data-login-url');
                 const registerUrl = urlDataElement.getAttribute('data-register-url');
                 const searchResultsUrl = urlDataElement.getAttribute('data-search-results-url');
                 const authStatusElement = document.getElementById('auth-status');
                 const isAuthenticatedStatus = authStatusElement.textContent === 'true';
-            
+
                 React.useEffect(() => {
                     setIsAuthenticated(isAuthenticatedStatus);
 
@@ -116,8 +117,17 @@
                             countdownInterval.current = null;
                         }
                     };
-                }, []);  
-                                            
+                }, []);
+
+                React.useEffect(() => { //effect hook for fade-in effect
+                    setFadeIn(true);
+                    const timer = setTimeout(() => {
+                        setFadeIn(false);
+                    }, 1000);
+
+                    return () => clearTimeout(timer);
+                }, []);
+
                 function updateCountdowns() {
                     setWatchingShows(prevWatchingShows => {
                         const newWatchingShows = [...prevWatchingShows];
@@ -142,7 +152,7 @@
                         return newWatchingShows;
                     });
                 }
-            
+
                 function handleDelete(id) {
                     const csrftoken = getCookie('csrftoken');
                     axios({
@@ -164,7 +174,7 @@
                         }
                     });
                 }
-            
+
                 function handleUpdate() {
                     setIsUpdating(true);
                     axios.get('/update_user_watchlist/')
@@ -179,15 +189,16 @@
                             setIsUpdating(false);
                         });
                 }
-            
+
                 if (isLoading) {
                     return (
+                        //empty
                         <div>
-                            <p>Loading...</p>
+                            <p> </p>
                         </div>
                     );
-                } 
-            
+                }
+
                 if (!isAuthenticatedStatus) {
                     return (
                         <div className="user-login-prompt">
@@ -196,13 +207,13 @@
                         </div>
                     );
                 }
-            
+
                 if (isAuthenticatedStatus) {
                     return (
                         <div className="watching-show-list-container">
                             <ul className="watching-show-list">
-                                {watchingShows.map(show =>
-                                    <li key={show.trakt} className="watching-show-item">
+                                {watchingShows.map((show, index) =>
+                                    <li key={show.trakt} className={`watching-show-item fade-in`} style={{animationDelay: `${index * 0.1}s`}}>
                                         <div className="watching-show-list-item-background" style={{
                                             backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
                                         </div>
@@ -237,6 +248,7 @@
                     );
                 }
             }
+
             ReactDOM.render(<WatchingShows />, document.querySelector("#app"));
         </script>
         {% endverbatim %}
