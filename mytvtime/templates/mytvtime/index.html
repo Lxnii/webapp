@@ -33,10 +33,10 @@
         </form>
 
         <!-- React CDN Link -->
-        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script defer crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script defer crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <script defer src="https://unpkg.com/axios/dist/axios.min.js"></script>
         {% verbatim %}
         <div id="app"></div>
         <script>
@@ -71,6 +71,7 @@
                 const [isLoading, setIsLoading] = React.useState(true);
                 const [isAuthenticated, setIsAuthenticated] = React.useState(false);
                 const [isUpdating, setIsUpdating] = React.useState(false);
+                const [update, setUpdate] = React.useState(false);
                 const [fadeIn, setFadeIn] = React.useState(false);  // New state variable for fade-in effect
 
                 const countdownInterval = React.useRef(null);
@@ -117,7 +118,7 @@
                             countdownInterval.current = null;
                         }
                     };
-                }, []);
+                }, [update]);
 
                 React.useEffect(() => { //effect hook for fade-in effect
                     setFadeIn(true);
@@ -180,7 +181,7 @@
                     axios.get('/update_user_watchlist/')
                         .then(res => {
                             if (res.data.status === 'success') {
-                                setIsAuthenticated(authStatusElement.textContent === 'true');
+                                setUpdate(prevState => !prevState);
                             } else {
                                 alert('Could not update database');
                             }
