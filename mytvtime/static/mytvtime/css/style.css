@@ -351,6 +351,7 @@
 .refresh-list-button:hover {
     opacity: 1;
     transform: scale(1); /* Increase the size of the button when hovered */
+    
 }
 
 /* .refresh-list-button:hover .refresh-icon {
@@ -497,9 +498,12 @@
 
     .watching-show-item h2 {
         /* text-align: left; */
-        /* margin-bottom: 0.8em; */
-        /* margin-top: 0.8em; */
-        font-size: 18px;
+        margin-bottom: 1.2em;
+        margin-top: 1.2em;
+        font-size: 16px;
+    }
+    .watching-show-item p {
+        font-size: 14px;
     }
     .watching-show-item button {
         top: 1em;
