@@ -1,5 +1,5 @@
 .h1-home {
-    text-align: center; 
+    text-align: center;
 }
 
 .body-home-page {
@@ -43,7 +43,7 @@
 .search-box {
     display: flex;
     justify-content: center;
-    margin: 1em auto; 
+    margin: 1em auto;
     margin-top: 3em;
     width: 45%;
     /* margin: 0 auto 20px; */
@@ -56,13 +56,13 @@
 
 @media screen and (min-width: 601px) and (max-width: 1050px) {
     .search-box {
-        width: 482px; 
+        width: 482px;
     }
 }
 
 @media screen and (max-width: 600px) {
     .search-box {
-        width: 84%; 
+        width: 84%;
     }
 }
 
@@ -78,23 +78,23 @@
 }
 
 .search-box button {
-    width: 40px; 
+    width: 40px;
     height: 40px;
     border: none;
-    border-radius: 50%; 
+    border-radius: 50%;
     background: none;
     cursor: pointer;
     outline: none;
-    padding: 0; 
+    padding: 0;
 }
 
 .icon-background {
-    display: inline-flex; 
+    display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 100%; 
+    width: 100%;
     height: 100%;
-    border-radius: 50%; 
+    border-radius: 50%;
     background: #f1f1f1;
 }
 
@@ -173,7 +173,7 @@
     justify-content: space-between;
     flex-direction: column;
     background-position: center;
-    background-size: cover; 
+    background-size: cover;
     padding: 1em;
     color: rgb(0, 0, 0);
     width: 100%;
@@ -212,25 +212,25 @@
     list-style-type: none;
     margin: 0 auto;
     padding: 0;
-    background: no-repeat center center; 
-    background-size: cover; 
+    background: no-repeat center center;
+    background-size: cover;
 }
 
 .watching-show-item {
-    position: relative; 
-    background: no-repeat center center; 
+    position: relative;
+    background: no-repeat center center;
     background-size: cover;
     background-position: center;
-    background-color: rgba(242, 242, 242, 0.5); 
+    background-color: rgba(242, 242, 242, 0.5);
     border: 0px solid #ddd;
-    padding: 20px 10px 10px 20px; 
-    text-align: left; 
-    color: #ffffff; 
+    padding: 20px 10px 10px 20px;
+    text-align: left;
+    color: #ffffff;
     line-height: 0.5;
-    font-weight: bold; 
-    height: 300px; 
-    overflow: hidden; 
-    
+    font-weight: bold;
+    height: 300px;
+    overflow: hidden;
+
 } */
 
 /* home page Watching Shows List */
@@ -238,7 +238,7 @@
     list-style-type: none;
     margin: 0 auto;
     padding: 0;
-    background: no-repeat center center; 
+    background: no-repeat center center;
     background-size: cover;
     display: flex;
     flex-direction: column;
@@ -270,52 +270,63 @@
 
 .watching-show-item {
     position: relative;
-    background: no-repeat center center; 
+    background: no-repeat center center;
     background-size: cover;
     background-position: center;
     background-color: rgba(242, 242, 242, 0.5);
     border: 0px solid #ddd;
     padding: 20px 20px 20px 20px;
-    text-align: left; 
-    color: #ffffff; 
+    text-align: left;
+    color: #ffffff;
     line-height: 0.5;
     /* font-weight: bold;  */
     height: 300px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    /* test changes */
+    margin-bottom: 1.5vw;
+    margin-left: 1.5vw;
+    margin-right: 1.5vw;
+    border-radius: 25px;
+    aspect-ratio: 2 / 1;
+    transition: transform 0.5s ease;
 }
 
 .watching-show-item h2 {
     text-align: left;
     margin-bottom: 1em;
     margin-top: 1em;
-    font-size: 20px; 
-    
+    font-size: 20px;
+
 }
 
 .watching-show-item button {
-    position: absolute; /* Use absolute positioning */
-    top: 12px; /* Place the button at the top of the element */
-    right: 10px; /* Place the button to the right of the element */
-    padding: 10px 16px; /* Increase padding */
-    background-color: rgba(29, 29, 29, 0.288); /* Change background color */
-    color: #ffffff; /* Change text color */
-    border: none; /* Remove border */
-    border-radius: 16px; /* Add border radius */
-    font-size: 14px; /* Change font size */
-    cursor: pointer; /* Change cursor style */
+    position: absolute;
+    top: 0.6em;
+    right: 0.6em;
+    padding: 10px 16px;
+    background-color: rgba(29, 29, 29, 0.288);
+    color: #ffffff;
+    border: none;
+    border-radius: 0.7vw;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.watching-show-item:hover {
+    transform: scale(1.02);
 }
 
 .refresh-icon {
-    font-size: 24px; 
-    color: #ffffff; 
+    font-size: 24px;
+    color: #ffffff;
     transition: transform 0.3s ease;
 }
 
 .refresh-list-button {
-    display: flex; 
-    justify-content: center; 
+    display: flex;
+    justify-content: center;
     align-items: center;
     margin-top: 50px;
     margin-bottom: 50px;
@@ -327,7 +338,7 @@
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    border-radius: 50%; 
+    border-radius: 50%;
     width: 50px;
     height: 50px;
     transition: all 0.3s ease;
@@ -343,7 +354,7 @@
 }
 
 /* .refresh-list-button:hover .refresh-icon {
-    color: #cccccc; 
+    color: #cccccc;
 } */
 
 .refresh-list-button:active {
@@ -366,13 +377,13 @@
 }
 
 .user-login-prompt a {
-    color: #1B98F5; 
+    color: #1B98F5;
     text-decoration: none;
 }
 
 .user-login-prompt a:hover {
     /* color: #004c99;  */
-    color: #0067ce; 
+    color: #0067ce;
 
 }
 
@@ -386,8 +397,8 @@
 
 .login-form, .register-form {
     display: block;
-    max-width: 400px; 
-    margin: 1em auto; 
+    max-width: 400px;
+    margin: 1em auto;
     padding: 20px;
     border-radius: 25px;
     background: #ffffff;
@@ -397,7 +408,7 @@
 
 .login-form input, .register-form input {
     display: block;
-    max-width: 500px; 
+    max-width: 500px;
     width: 100%;
     height: 40px;
     font-size: 18px;
@@ -415,7 +426,7 @@
     height: 40px;
     font-size: 16px;
     border: none;
-    border-radius: 25px; 
+    border-radius: 25px;
     background: linear-gradient(to right, rgba(0, 180, 255, 1), rgba(0, 100, 255, 1));
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -428,18 +439,18 @@
 }
 
 .login-form-hints {
-    line-height: 2;  
+    line-height: 2;
 }
 
 .register-form-hints {
-    line-height: 1.5; 
+    line-height: 1.5;
 }
 
 .errorlist {
-    list-style-type: none; 
-    padding-left: 0; 
-    color: red; 
-    font-size: 0.8em;  
+    list-style-type: none;
+    padding-left: 0;
+    color: red;
+    font-size: 0.8em;
     text-align: left;
 }
 
@@ -449,14 +460,14 @@
     text-align: center;
     /* margin: 1em 0; */
 }
-  
+
 .countdown ul {
     display: inline-flex;
     list-style: none;
     padding: 0;
     justify-content: center;
 }
-  
+
 .countdown ul li {
     font-size: 0.8em;
     list-style-type: none;
@@ -470,7 +481,7 @@
     font-size: 5em;
     line-height: 1.4;
 }
-  
+
 @media all and (max-width: 1300px) {
     .show-season {
         margin: 0;
@@ -479,25 +490,36 @@
     .watching-show-item {
         padding: 0px 5px 5px 10px;
         height: 180px;
+        margin-bottom: 2.5vw;
+        margin-left: 2.5vw;
+        margin-right: 2.5vw;
     }
 
     .watching-show-item h2 {
         /* text-align: left; */
         /* margin-bottom: 0.8em; */
         /* margin-top: 0.8em; */
-        font-size: 18px;  
+        font-size: 18px;
+    }
+    .watching-show-item button {
+        top: 1em;
+        right: 1em;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 12px;
     }
 
     .countdown ul li {
       font-size: 0.7em;
       padding: 0;
     }
-    
+
     .countdown ul li span {
       font-size: 3em;
     }
 }
-  
+
+/* display Watching show list animation */
 .fade-in {
     animation: fadeIn ease 1s;
     -webkit-animation: fadeIn ease 1s;
@@ -506,9 +528,8 @@
     -ms-animation: fadeIn ease 1s;
     animation-fill-mode: backwards;
   }
-  
+
 @keyframes fadeIn {
     0% {opacity:0;}
     100% {opacity:1;}
 }
-  
