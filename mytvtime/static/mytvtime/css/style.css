@@ -315,7 +315,7 @@
 }
 
 .watching-show-item:hover {
-    transform: scale(1.02);
+    transform: scale(1.01);
 }
 
 .refresh-icon {
@@ -516,6 +516,12 @@
 
     .countdown ul li span {
       font-size: 3em;
+    }
+}
+
+@media (hover: none) {
+    .watching-show-item:hover {
+        transform: none;
     }
 }
 
