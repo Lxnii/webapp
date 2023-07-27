@@ -72,7 +72,8 @@
                 const [isAuthenticated, setIsAuthenticated] = React.useState(false);
                 const [isUpdating, setIsUpdating] = React.useState(false);
                 const [update, setUpdate] = React.useState(false);
-                const [fadeIn, setFadeIn] = React.useState(false);  // New state variable for fade-in effect
+                const [fadeIn, setFadeIn] = React.useState(false);  // State variable for fade-in effect
+                const [showDelete, setShowDelete] = React.useState(null); // State for showing delete icon
 
                 const countdownInterval = React.useRef(null);
 
@@ -175,6 +176,9 @@
                         }
                     });
                 }
+                function handleItemClick(id) {
+                    setShowDelete(showDelete === id ? null : id); // Toggle delete icon when item is clicked
+                }
 
                 function handleUpdate() {
                     setIsUpdating(true);
@@ -214,7 +218,9 @@
                         <div className="watching-show-list-container">
                             <ul className="watching-show-list">
                                 {watchingShows.map((show, index) =>
-                                    <li key={show.trakt} className={`watching-show-item fade-in`} style={{animationDelay: `${index * 0.1}s`}}>
+                                    <li key={show.trakt} className={`watching-show-item fade-in`} style={{animationDelay: `${index * 0.1}s`}}
+                                    onClick={() => handleItemClick(show.trakt)} // Event handler for item click
+                                    >
                                         <div className="watching-show-list-item-background" style={{
                                             backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
                                         </div>
@@ -237,7 +243,17 @@
                                                     <p className="show-status">{show.status}</p>
                                                 </>
                                             )}
-                                            <button className="delete-button" onClick={() => handleDelete(show.trakt)}>Delete</button>
+                                            <button 
+                                                className="delete-button" 
+                                                style={{visibility: showDelete === show.trakt ? 'visible' : 'hidden'}} // Change visibility based on showDelete state
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Stop the click event from bubbling to the parent element
+                                                    handleDelete(show.trakt);
+                                                }}
+                                            >
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+
                                         </div>
                                     </li>
                                 )}
