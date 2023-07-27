@@ -72,9 +72,9 @@
                 const [isAuthenticated, setIsAuthenticated] = React.useState(false);
                 const [isUpdating, setIsUpdating] = React.useState(false);
                 const [update, setUpdate] = React.useState(false);
-                const [fadeIn, setFadeIn] = React.useState(false);  // State variable for fade-in effect
+                const [fadeIn, setFadeIn] = React.useState(false); // State variable for fade-in effect
                 const [showDelete, setShowDelete] = React.useState(null); // State for showing delete icon
-
+                const [touchActive, setTouchActive] = React.useState(null); // State for touch active
                 const countdownInterval = React.useRef(null);
 
                 const urlDataElement = document.getElementById('url-data');
@@ -178,6 +178,7 @@
                 }
                 function handleItemClick(id) {
                     setShowDelete(showDelete === id ? null : id); // Toggle delete icon when item is clicked
+                    setTouchActive(touchActive === id ? null : id); // Toggle touch active when item is touched
                 }
 
                 function handleUpdate() {
@@ -218,8 +219,9 @@
                         <div className="watching-show-list-container">
                             <ul className="watching-show-list">
                                 {watchingShows.map((show, index) =>
-                                    <li key={show.trakt} className={`watching-show-item fade-in`} style={{animationDelay: `${index * 0.1}s`}}
-                                    onClick={() => handleItemClick(show.trakt)} // Event handler for item click
+                                    <li key={show.trakt} className={`watching-show-item fade-in ${touchActive === show.trakt ? 'touch-active' : ''}`}
+                                        style={{animationDelay: `${index * 0.1}s`}}
+                                        onClick={() => handleItemClick(show.trakt)} // Event handler for item click
                                     >
                                         <div className="watching-show-list-item-background" style={{
                                             backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>

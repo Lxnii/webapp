@@ -559,6 +559,10 @@
         transform: none;
     }
 
+    .watching-show-item.touch-active {
+        transform: scale(1.02);
+    }
+
     .watching-show-item button {
         transition: transform 300ms;
         color: #ff0000; 
