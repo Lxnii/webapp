@@ -371,7 +371,7 @@ def get_watching_shows(request):
             Returning series are put at the front, ended shows are put at the end,
             and other shows are sorted by their next episode air time.
             """
-            if show['status'].lower() == 'returning series' and show['days'] is None:
+            if show['status'].lower() == 'returning' and show['days'] is None:
                 return (1e10, show['title'])
             elif show['status'].lower() == 'ended':
                 return (2 * 1e10, show['title'])
