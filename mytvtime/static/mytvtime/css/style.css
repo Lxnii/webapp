@@ -293,6 +293,10 @@
     transition: transform 0.5s ease;
 }
 
+.watching-show-item:hover {
+    transform: scale(1.01);
+}
+
 .watching-show-item h2 {
     text-align: left;
     margin-bottom: 1em;
@@ -300,7 +304,7 @@
     font-size: 20px;
 
 }
-
+/* 
 .watching-show-item button {
     position: absolute;
     top: 0.6em;
@@ -312,10 +316,37 @@
     border-radius: 0.7vw;
     font-size: 12px;
     cursor: pointer;
+} */
+
+.watching-show-item button {
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em;
+    padding: 10px 12px;
+    background-color: rgba(29, 29, 29, 0.288);
+    color: #ffffff;
+    border: none;
+    border-radius: 0.7vw;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    transition: transform 100ms;
 }
 
-.watching-show-item:hover {
-    transform: scale(1.01);
+.watching-show-item button:active {
+    transform: scale(0.9); 
+    color: #ff0000; 
+
+}
+
+@media (hover: hover) {
+    .watching-show-item button:hover {
+        color: #ff0000; 
+    }
+
+
 }
 
 .refresh-icon {
@@ -506,11 +537,11 @@
         font-size: 14px;
     }
     .watching-show-item button {
-        top: 1em;
-        right: 1em;
-        padding: 8px 12px;
+        top: 0.8em;
+        right: 0.8em;
+        padding: 8px 10px;
         border-radius: 12px;
-        font-size: 12px;
+        font-size: 18px;
     }
 
     .countdown ul li {
@@ -526,6 +557,15 @@
 @media (hover: none) {
     .watching-show-item:hover {
         transform: none;
+    }
+
+    .watching-show-item button {
+        transition: transform 300ms;
+        color: #ff0000; 
+    }
+
+    .watching-show-item button:active {
+        transform: scale(0.7);
     }
 }
 
