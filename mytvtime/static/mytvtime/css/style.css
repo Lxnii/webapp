@@ -397,7 +397,7 @@
     color: #bbbbbb; /* Change color on active */
 }
 
-.user-login-prompt {
+.user-login-prompt, .empty-watching-show-list-message{
     background-color: #f0f0f0;
     color: #333;
     padding: 1em;
@@ -407,7 +407,7 @@
     margin-top: 10em;
 }
 
-.user-login-prompt a {
+.user-login-prompt a,.empty-watching-show-list-message {
     color: #1B98F5;
     text-decoration: none;
 }
