@@ -84,6 +84,25 @@
                 const authStatusElement = document.getElementById('auth-status');
                 const isAuthenticatedStatus = authStatusElement.textContent === 'true';
 
+                const updateCountdowns = () => {
+                    setWatchingShows((prevWatchingShows) => {
+                        return prevWatchingShows.map((show) => {
+                            if (show.air_date) {
+                                // Calculate the countdown using the air_date
+                                let airDate = new Date(show.air_date);
+                                let now = new Date();
+                                let diff = airDate - now;
+                                show.countdown = {
+                                    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+                                    hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                                    minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+                                };
+                            }
+                            return show;
+                        });
+                    });
+                };
+
                 React.useEffect(() => {
                     setIsAuthenticated(isAuthenticatedStatus);
 
@@ -94,14 +113,57 @@
 
                     axios.get('/get_watching_shows/')
                         .then(res => {
-                            const watchingShows = res.data.watching_shows || [];
+                            let watchingShows = res.data.watching_shows || [];
                             for (const show of watchingShows) {
-                                show.countdown = {
-                                    days: show.days,
-                                    hours: show.hours,
-                                    minutes: show.minutes
-                                };
+                                if (show.air_date) {
+                                    // Calculate the countdown using the air_date
+                                    let airDate = new Date(show.air_date);
+                                    let now = new Date();
+                                    let diff = airDate - now;
+                                    show.countdown = {
+                                        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+                                        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                                        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+                                    };
+                                } else {
+                                    show.countdown = null;
+                                }
                             }
+
+                            // Sort the shows data
+                            watchingShows.sort((a, b) => {
+                                if (a.air_date && b.air_date) {
+                                    return new Date(a.air_date) - new Date(b.air_date);
+                                }
+                                if (a.air_date) {
+                                    return -1;
+                                }
+                                if (b.air_date) {
+                                    return 1;
+                                }
+
+                                if (a.status.toLowerCase() === 'returning' && b.status.toLowerCase() === 'returning') {
+                                    return 0;
+                                }
+                                if (a.status.toLowerCase() === 'returning') {
+                                    return -1;
+                                }
+                                if (b.status.toLowerCase() === 'returning') {
+                                    return 1;
+                                }
+
+                                if (a.status.toLowerCase() === 'ended' && b.status.toLowerCase() === 'ended') {
+                                    return 0;
+                                }
+                                if (a.status.toLowerCase() === 'ended') {
+                                    return 1;
+                                }
+                                if (b.status.toLowerCase() === 'ended') {
+                                    return -1;
+                                }
+
+                                return a.title.localeCompare(b.title);
+                            });
                             setWatchingShows(watchingShows);
                             setIsLoading(false);
 
@@ -130,31 +192,7 @@
                     return () => clearTimeout(timer);
                 }, []);
 
-                function updateCountdowns() {
-                    setWatchingShows(prevWatchingShows => {
-                        const newWatchingShows = [...prevWatchingShows];
-                        for (const show of newWatchingShows) {
-                            if (show.countdown) {
-                                if (show.countdown.minutes && show.countdown.minutes > 0) {
-                                    show.countdown.minutes--;
-                                } else if (show.countdown.hours && show.countdown.hours > 0) {
-                                    show.countdown.hours--;
-                                    show.countdown.minutes = 59;
-                                } else if (show.countdown.days && show.countdown.days > 0) {
-                                    show.countdown.days--;
-                                    show.countdown.hours = 23;
-                                    show.countdown.minutes = 59;
-                                } else {
-                                    show.countdown.days = null;
-                                    show.countdown.hours = null;
-                                    show.countdown.minutes = null;
-                                }
-                            }
-                        }
-                        return newWatchingShows;
-                    });
-                }
-
+                
                 function handleDelete(id) {
                     const csrftoken = getCookie('csrftoken');
                     axios({
@@ -215,56 +253,64 @@
                 }
 
                 if (isAuthenticatedStatus) {
-                    return (
-                        <div className="watching-show-list-container">
-                            <ul className="watching-show-list">
-                                {watchingShows.map((show, index) =>
-                                    <li key={show.trakt} className={`watching-show-item fade-in ${touchActive === show.trakt ? 'touch-active' : ''}`}
-                                        style={{animationDelay: `${index * 0.1}s`}}
-                                        onClick={() => handleItemClick(show.trakt)} // Event handler for item click
-                                    >
-                                        <div className="watching-show-list-item-background" style={{
-                                            backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
-                                        </div>
-                                        <div className="watching-show-list-item-content">
-                                            <h2>{show.title}</h2>
-                                            {show.countdown.days != null && show.countdown.hours != null && show.countdown.minutes != null ? (
-                                                <>
-                                                    <p className="show-season">S{show.season} E{show.episode}</p>
-                                                    {show.countdown ? 
-                                                    (<div className="countdown">
-                                                        <ul>
-                                                            <li><span>{show.countdown.days}</span>Days</li>
-                                                            <li><span>{show.countdown.hours}</span>Hours</li>
-                                                            <li><span>{show.countdown.minutes}</span>Minutes</li>
-                                                        </ul>
-                                                    </div>): null}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <p className="show-status">{show.status}</p>
-                                                </>
-                                            )}
-                                            <button 
-                                                className="delete-button" 
-                                                style={{visibility: showDelete === show.trakt ? 'visible' : 'hidden'}} // Change visibility based on showDelete state
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Stop the click event from bubbling to the parent element
-                                                    handleDelete(show.trakt);
-                                                }}
-                                            >
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-
-                                        </div>
-                                    </li>
-                                )}
-                            </ul>
-                            <button className="refresh-list-button" onClick={handleUpdate}>
-                                <i className={`fas fa-sync-alt refresh-icon ${isUpdating ? 'fa-spin' : ''}`}></i>
-                            </button>
-                        </div>
-                    );
+                    if (watchingShows.length === 0) {
+                        return (
+                            <div className="empty-watching-show-list-message">
+                                <p>Your watching shows list is currently empty.</p>
+                                <p>Start adding new shows!</p>
+                            </div>
+                        );
+                    } else {
+                        return (
+                            <div className="watching-show-list-container">
+                                <ul className="watching-show-list">
+                                    {watchingShows.map((show, index) =>
+                                        <li key={show.trakt} className={`watching-show-item fade-in ${touchActive === show.trakt ? 'touch-active' : ''}`}
+                                            style={{animationDelay: `${index * 0.1}s`}}
+                                            onClick={() => handleItemClick(show.trakt)} // Event handler for item click
+                                        >
+                                            <div className="watching-show-list-item-background" style={{
+                                                backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
+                                            </div>
+                                            <div className="watching-show-list-item-content">
+                                                <h2>{show.title}</h2>
+                                                {show.season != null && show.episode != null && show.countdown && (
+                                                    <>
+                                                        <p className="show-season">S{show.season} E{show.episode}</p>
+                                                        <div className="countdown">
+                                                            <ul>
+                                                                <li><span>{show.countdown.days}</span>Days</li>
+                                                                <li><span>{show.countdown.hours}</span>Hours</li>
+                                                                <li><span>{show.countdown.minutes}</span>Minutes</li>
+                                                            </ul>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                {show.season == null && show.episode == null && (
+                                                    <>
+                                                        <p className="show-status">{show.status}</p>
+                                                    </>
+                                                )}
+                                                <button 
+                                                    className="delete-button" 
+                                                    style={{visibility: showDelete === show.trakt ? 'visible' : 'hidden'}} // Change visibility based on showDelete state
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Stop the click event from bubbling to the parent element
+                                                        handleDelete(show.trakt);
+                                                    }}
+                                                >
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </li>
+                                    )}
+                                </ul>
+                                <button className="refresh-list-button" onClick={handleUpdate}>
+                                    <i className={`fas fa-sync-alt refresh-icon ${isUpdating ? 'fa-spin' : ''}`}></i>
+                                </button>
+                            </div>
+                        );
+                    }
                 }
             }
 
