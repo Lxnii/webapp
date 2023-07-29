@@ -4,7 +4,7 @@
 <html lang="en">
     <head>
         <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <title>My TV Time</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
@@ -18,7 +18,7 @@
         </div>
         <div class="user-actions">
             {% if request.user.is_authenticated %}
-                <span>Welcome, {{ request.user.username }}</span>
+                <span>Welcome, {{ request.user.username|capfirst }}</span>
                 <a href="javascript:void(0);" onclick="handleLogout()">Logout</a>
             {% else %}
                 <a href="{% url 'mytvtime:login' %}">Login</a>
