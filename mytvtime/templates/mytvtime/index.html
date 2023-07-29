@@ -92,10 +92,11 @@
                                 let airDate = new Date(show.air_date);
                                 let now = new Date();
                                 let diff = airDate - now;
+
                                 show.countdown = {
                                     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
                                     hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                                    minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+                                    minutes: Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60))
                                 };
                             }
                             return show;
@@ -120,16 +121,27 @@
                                     let airDate = new Date(show.air_date);
                                     let now = new Date();
                                     let diff = airDate - now;
+                                    
+                                    // Calculate the delay for the first countdown refresh
+                                    let delay = (60 - now.getSeconds()) * 1000;
+                                    show.delay = delay;
+
                                     show.countdown = {
                                         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
                                         hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                                        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+                                        minutes: Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60))
                                     };
                                 } else {
                                     show.countdown = null;
                                 }
                             }
 
+                            // Set the interval for the first countdown refresh
+                            setTimeout(() => {
+                                updateCountdowns();
+                                countdownInterval.current = setInterval(updateCountdowns, 60000);
+                            }, Math.min(...watchingShows.filter(show => show.air_date).map(show => show.delay)));
+                        
                             // Sort the shows data
                             watchingShows.sort((a, b) => {
                                 if (a.air_date && b.air_date) {
@@ -166,9 +178,6 @@
                             });
                             setWatchingShows(watchingShows);
                             setIsLoading(false);
-
-                            // Start the interval
-                            countdownInterval.current = setInterval(updateCountdowns, 60000);
                         })
                         .catch(error => {
                             console.error(error);
@@ -191,7 +200,6 @@
 
                     return () => clearTimeout(timer);
                 }, []);
-
                 
                 function handleDelete(id) {
                     const csrftoken = getCookie('csrftoken');
