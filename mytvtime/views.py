@@ -301,92 +301,147 @@ def add_show_to_watchlist(request, trakt_id):
     return redirect('mytvtime:index')
 
 
+# @login_required
+# def get_watching_shows(request):
+#     if request.user.is_authenticated:
+#         user_id = request.user.id
+#         watching_shows = []
+#         user_watchlist = Watchlist.objects.filter(user=user_id)
+#         for watchlist_item in user_watchlist:
+#             show = watchlist_item.show
+
+#             # Get the next episode if it exists
+#             next_episode = show.next_episode.first() if show.next_episode.exists() else None
+
+#             # If the next episode has aired, update the show and next episode details
+#             if next_episode and next_episode.air_date and next_episode.air_date < timezone.now():
+#                 show_details = get_show_details_from_trakt(show.trakt_id)
+#                 new_show_datailes = show_details
+#                 logger.info('找到过时的下一集时间show,并从trakt更新')
+#                 # Update the next episode info in the database
+#                 next_episode_details = show_details.get('next_episode')
+#                 if next_episode_details:
+#                     next_episode.title = next_episode_details.get('title')
+#                     next_episode.season = next_episode_details.get('season')
+#                     next_episode.number = next_episode_details.get('number')
+#                     next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
+#                     next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+#                     # test_show_next_episode_trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+#                     next_episode.save()
+#                 # Get the updated next episode
+#                 next_episode = show.next_episode.first() if show.next_episode.exists() else None
+
+#             # Initialize watching_show dictionary
+#             watching_show = {
+#                 'title': show.title,
+#                 'trakt': show.trakt_id,
+#                 'imdb': show.imdb_id,
+#                 'tmdb': show.tmdb_id,
+#                 'slug': show.slug,
+#                 'season': next_episode.season if next_episode else None,
+#                 'episode': next_episode.number if next_episode else None,
+#                 'days': None,
+#                 'hours': None,
+#                 'minutes': None,
+#                 'status': 'Returning' if show.status == 'returning series' else show.status.capitalize(),
+#                 'poster_url': show.poster_url,
+#                 'backdrop_url': show.backdrop_url
+#             }
+
+#             # Calculate the days and hours until the next episode
+#             if next_episode and next_episode.air_date is not None:
+#                 next_episode_time = next_episode.air_date
+#                 now = timezone.now()  # get current time with timezone
+#                 time_delta = next_episode_time - now
+#                 days = time_delta.days
+#                 hours = time_delta.seconds // 3600
+#                 minutes = (time_delta.seconds // 60) % 60
+
+#                 # Update 'days' and 'hours' fields
+#                 watching_show['days'] = days
+#                 watching_show['hours'] = hours
+#                 watching_show['minutes'] = minutes
+#                 watching_show['trakt_next_episode_update_date'] = next_episode.trakt_updated_at
+#             watching_shows.append(watching_show)
+
+#         # Sort user's watchlist to front end.
+#         def sort_shows(show):
+#             """
+#             Custom sorting function for shows.
+#             Returning series are put at the front, ended shows are put at the end,
+#             and other shows are sorted by their next episode air time.
+#             """
+#             if show['status'].lower() == 'returning' and show['days'] is None:
+#                 return (1e10, show['title'])
+#             elif show['status'].lower() == 'ended':
+#                 return (2 * 1e10, show['title'])
+#             elif show['days'] is not None:
+#                 return ((show['days'] * 24 * 60 + show['hours'] * 60 + show['minutes']), show['title'])
+#             else:
+#                 return (2 * 1e10, show['title'])  # Other shows without a next episode are sorted to the end
+
+#         watching_shows = sorted(watching_shows, key=sort_shows)
+
+#         return JsonResponse({'watching_shows': watching_shows})
+
+#     else:
+#         # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
+#         return JsonResponse({'unauthenticated': True}, safe=False)
+
 @login_required
 def get_watching_shows(request):
-    if request.user.is_authenticated:
-        user_id = request.user.id
-        watching_shows = []
-        user_watchlist = Watchlist.objects.filter(user=user_id)
-        for watchlist_item in user_watchlist:
-            show = watchlist_item.show
+    # Check if the user is authenticated
+    if not request.user.is_authenticated:
+        return JsonResponse({'unauthenticated': True}, safe=False)
 
-            # Get the next episode if it exists
+    current_user = request.user
+    user_watchlist = Watchlist.objects.filter(user=current_user)
+
+    # Prepare the data to return
+    shows_data = []
+    for watchlist_item in user_watchlist:
+        show = watchlist_item.show
+        next_episode = show.next_episode.first() if show.next_episode.exists() else None
+
+        # If the next episode has aired, update the show and next episode details
+        if next_episode and next_episode.air_date and next_episode.air_date < timezone.now():
+            show_details = get_show_details_from_trakt(show.trakt_id)
+
+            # Update the next episode info to the database
+            next_episode_details = show_details.get('next_episode')
+            if next_episode_details:
+                next_episode.title = next_episode_details.get('title')
+                next_episode.season = next_episode_details.get('season')
+                next_episode.number = next_episode_details.get('number')
+                next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
+                next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+                next_episode.save()
+
+            # Get the updated next episode
             next_episode = show.next_episode.first() if show.next_episode.exists() else None
 
-            # If the next episode has aired, update the show and next episode details
-            if next_episode and next_episode.air_date and next_episode.air_date < timezone.now():
-                show_details = get_show_details_from_trakt(show.trakt_id)
-                new_show_datailes = show_details
-                logger.info('找到过时的下一集时间show,并从trakt更新')
-                # Update the next episode info in the database
-                next_episode_details = show_details.get('next_episode')
-                if next_episode_details:
-                    next_episode.title = next_episode_details.get('title')
-                    next_episode.season = next_episode_details.get('season')
-                    next_episode.number = next_episode_details.get('number')
-                    next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
-                    next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
-                    # test_show_next_episode_trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
-                    next_episode.save()
-                # Get the updated next episode
-                next_episode = show.next_episode.first() if show.next_episode.exists() else None
+        # Prepare the data for a single show
+        watching_show = {
+            'title': show.title,
+            'trakt': show.trakt_id,
+            'imdb': show.imdb_id,
+            'tmdb': show.tmdb_id,
+            'slug': show.slug,
+            'season': next_episode.season if next_episode else None,
+            'episode': next_episode.number if next_episode else None,
+            'air_date': next_episode.air_date.isoformat() if next_episode and next_episode.air_date else None,
+            'next_episode_trakt_updated_at': next_episode.trakt_updated_at.isoformat() if next_episode and next_episode.trakt_updated_at else None,
+            'show_update_timestamp': show.timestamp.isoformat(),
+            'next_episode_update_timestamp': next_episode.timestamp.isoformat() if next_episode and next_episode.timestamp else None,
+            'status': 'Returning' if show.status == 'returning series' else show.status.capitalize(),
+            'poster_url': show.poster_url,
+            'backdrop_url': show.backdrop_url
+        }
 
-            # Initialize watching_show dictionary
-            watching_show = {
-                'title': show.title,
-                'trakt': show.trakt_id,
-                'imdb': show.imdb_id,
-                'tmdb': show.tmdb_id,
-                'slug': show.slug,
-                'season': next_episode.season if next_episode else None,
-                'episode': next_episode.number if next_episode else None,
-                'days': None,
-                'hours': None,
-                'minutes': None,
-                'status': 'Returning' if show.status == 'returning series' else show.status.capitalize(),
-                'poster_url': show.poster_url,
-                'backdrop_url': show.backdrop_url
-            }
+        shows_data.append(watching_show)
 
-            # Calculate the days and hours until the next episode
-            if next_episode and next_episode.air_date is not None:
-                next_episode_time = next_episode.air_date
-                now = timezone.now()  # get current time with timezone
-                time_delta = next_episode_time - now
-                days = time_delta.days
-                hours = time_delta.seconds // 3600
-                minutes = (time_delta.seconds // 60) % 60
+    return JsonResponse({'watching_shows': shows_data})
 
-                # Update 'days' and 'hours' fields
-                watching_show['days'] = days
-                watching_show['hours'] = hours
-                watching_show['minutes'] = minutes
-                watching_show['trakt_next_episode_update_date'] = next_episode.trakt_updated_at
-            watching_shows.append(watching_show)
-
-        # Sort user's watchlist to front end.
-        def sort_shows(show):
-            """
-            Custom sorting function for shows.
-            Returning series are put at the front, ended shows are put at the end,
-            and other shows are sorted by their next episode air time.
-            """
-            if show['status'].lower() == 'returning' and show['days'] is None:
-                return (1e10, show['title'])
-            elif show['status'].lower() == 'ended':
-                return (2 * 1e10, show['title'])
-            elif show['days'] is not None:
-                return ((show['days'] * 24 * 60 + show['hours'] * 60 + show['minutes']), show['title'])
-            else:
-                return (2 * 1e10, show['title'])  # Other shows without a next episode are sorted to the end
-
-        watching_shows = sorted(watching_shows, key=sort_shows)
-
-        return JsonResponse({'watching_shows': watching_shows})
-
-    else:
-        # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
-        return JsonResponse({'unauthenticated': True}, safe=False)
 
 @login_required
 def remove_show_from_watchlist(request):

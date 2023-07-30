@@ -21,15 +21,16 @@
 }
 
 .user-actions span {
-    margin-right: 10px;
-    font-size: 16px;
+    margin-right: 2px;
+    font-size: 14px;
     color: #333;
 }
 
 .user-actions a {
     text-decoration: none;
+    font-size: 14px;
     color: #333;
-    padding: 10px 20px;
+    padding: 10px 12px;
     border-radius: 20px;
     background: linear-gradient(to right, #fafafa, #e6e6e6);
     transition: background 0.3s ease;
@@ -44,7 +45,7 @@
     display: flex;
     justify-content: center;
     margin: 1em auto;
-    margin-top: 3em;
+    margin-top: 2.5em;
     width: 45%;
     /* margin: 0 auto 20px; */
     box-sizing: border-box;
@@ -103,7 +104,6 @@
     color: #1B98F5;
     font-size: 16px;
 }
-
 
 .search-back-button {
     display: block;
@@ -344,8 +344,6 @@
     .watching-show-item button:hover {
         color: #ff0000; 
     }
-
-
 }
 
 .refresh-icon {
@@ -377,16 +375,10 @@
     opacity: 0.8;
 }
 
-
 .refresh-list-button:hover {
     opacity: 1;
     transform: scale(1); /* Increase the size of the button when hovered */
-    
 }
-
-/* .refresh-list-button:hover .refresh-icon {
-    color: #cccccc;
-} */
 
 .refresh-list-button:active {
     opacity: 1;
@@ -397,7 +389,7 @@
     color: #bbbbbb; /* Change color on active */
 }
 
-.user-login-prompt {
+.user-login-prompt, .empty-watching-show-list-message{
     background-color: #f0f0f0;
     color: #333;
     padding: 1em;
@@ -407,7 +399,7 @@
     margin-top: 10em;
 }
 
-.user-login-prompt a {
+.user-login-prompt a,.empty-watching-show-list-message {
     color: #1B98F5;
     text-decoration: none;
 }
@@ -436,7 +428,6 @@
     box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
 }
 
-
 .login-form input, .register-form input {
     display: block;
     max-width: 500px;
@@ -450,7 +441,6 @@
     margin-bottom: 1em;
     box-sizing: border-box;
 }
-
 
 .login-button, .register-button {
     width: 100%;
@@ -484,7 +474,6 @@
     font-size: 0.8em;
     text-align: left;
 }
-
 
 /* Test Countdown Styles */
 .countdown {
