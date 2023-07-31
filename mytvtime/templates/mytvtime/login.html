@@ -4,10 +4,11 @@
 <head>
     <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
     <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="body-login-page">
-    <h2>Login</h2>
     <form class="login-form" method="post" autocomplete="off">
+        <h2>Login</h2>
         {% csrf_token %}
         <div class="login-form-hints">{{ form.as_p }}</div>
         <button class="login-button" type="submit">Login</button>
