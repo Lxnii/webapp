@@ -278,6 +278,51 @@
 
 }
 
+.show-season-air-date p {
+    display: inline;
+}
+
+.show-season-air-date p:last-child {
+    margin-right: 0;
+    margin-left: 10px;
+}
+
+/* Test Countdown Styles */
+.countdown {
+    text-align: center;
+    /* margin: 1em 0; */
+}
+
+.countdown ul {
+    display: inline-flex;
+    list-style: none;
+    padding: 0;
+    justify-content: center;
+}
+
+.countdown ul li {
+    font-size: 0.8em;
+    list-style-type: none;
+    padding: 1em;
+    margin: 0.5em;
+    text-transform: uppercase;
+}
+
+.countdown ul li span {
+    display: block;
+    font-size: 5em;
+    line-height: 1.4;
+}
+
+.no-air-date-icon {
+    position: absolute;
+    top: 20px;
+    text-align: left;
+    margin-bottom: 1em;
+    margin-left: 1em;
+    font-size: 20px;
+}
+
 .watching-show-item button {
     position: absolute;
     top: 0.5em;
@@ -307,13 +352,66 @@
     }
 }
 
-.no-air-date-icon {
-    position: absolute;
-    top: 20px;
-    text-align: left;
-    margin-bottom: 1em;
-    margin-left: 1em;
-    font-size: 20px;
+
+@media all and (max-width: 1300px) {
+    .show-season {
+        margin: 0;
+    }
+
+    .watching-show-item {
+        padding: 5px 5px 5px 5px;
+        height: 180px;
+        margin-bottom: 2.5vw;
+        margin-left: 2.5vw;
+        margin-right: 2.5vw;
+    }
+
+    .watching-show-item h2 {
+        /* text-align: left; */
+        margin-bottom: 1em;
+        margin-top: 1em;
+        margin-left: 1em;
+        font-size: 16px;
+    }
+    .watching-show-item p {
+        font-size: 14px;
+        margin-left: 16px;
+    }
+    .watching-show-item button {
+        top: 0.6em;
+        right: 0.6em;
+        padding: 8px 10px;
+        border-radius: 12px;
+        font-size: 18px;
+    }
+
+    .countdown ul li {
+      font-size: 0.7em;
+      padding: 0;
+    }
+
+    .countdown ul li span {
+      font-size: 3em;
+    }
+}
+
+@media (hover: none) {
+    .watching-show-item:hover {
+        transform: none;
+    }
+
+    .watching-show-item.touch-active {
+        transform: scale(1.02);
+    }
+
+    .watching-show-item button {
+        transition: transform 300ms;
+        color: #ff0000; 
+    }
+
+    .watching-show-item button:active {
+        transform: scale(0.7);
+    }
 }
 
 .refresh-icon {
@@ -451,95 +549,6 @@
     color: red;
     font-size: 0.8em;
     text-align: left;
-}
-
-
-/* Test Countdown Styles */
-.countdown {
-    text-align: center;
-    /* margin: 1em 0; */
-}
-
-.countdown ul {
-    display: inline-flex;
-    list-style: none;
-    padding: 0;
-    justify-content: center;
-}
-
-.countdown ul li {
-    font-size: 0.8em;
-    list-style-type: none;
-    padding: 1em;
-    margin: 0.5em;
-    text-transform: uppercase;
-}
-
-.countdown ul li span {
-    display: block;
-    font-size: 5em;
-    line-height: 1.4;
-}
-
-@media all and (max-width: 1300px) {
-    .show-season {
-        margin: 0;
-    }
-
-    .watching-show-item {
-        padding: 5px 5px 5px 5px;
-        height: 180px;
-        margin-bottom: 2.5vw;
-        margin-left: 2.5vw;
-        margin-right: 2.5vw;
-    }
-
-    .watching-show-item h2 {
-        /* text-align: left; */
-        margin-bottom: 1em;
-        margin-top: 1em;
-        margin-left: 1em;
-        font-size: 16px;
-    }
-    .watching-show-item p {
-        font-size: 14px;
-        margin-left: 16px;
-    }
-    .watching-show-item button {
-        top: 0.6em;
-        right: 0.6em;
-        padding: 8px 10px;
-        border-radius: 12px;
-        font-size: 18px;
-    }
-
-    .countdown ul li {
-      font-size: 0.7em;
-      padding: 0;
-    }
-
-    .countdown ul li span {
-      font-size: 3em;
-    }
-}
-
-@media (hover: none) {
-    .watching-show-item:hover {
-        transform: none;
-    }
-
-    .watching-show-item.touch-active {
-        transform: scale(1.02);
-    }
-
-    .watching-show-item button {
-        transition: transform 300ms;
-        color: #ff0000; 
-    }
-
-    .watching-show-item button:active {
-        transform: scale(0.7);
-    }
 }
 
 /* display Watching show list animation */

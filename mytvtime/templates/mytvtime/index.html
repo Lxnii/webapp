@@ -77,6 +77,8 @@
                 const [showDelete, setShowDelete] = React.useState(null); // State for showing delete icon
                 const [touchActive, setTouchActive] = React.useState(null); // State for touch active
                 const [showDetails, setShowDetails] = React.useState(null); // State for displaying show details in list
+                const [showAirDate, setShowAirDate] = React.useState(null); // State for displaying air date in list
+
                 const countdownInterval = React.useRef(null);
 
                 const urlDataElement = document.getElementById('url-data');
@@ -228,6 +230,7 @@
                     setShowDelete(showDelete === id ? null : id); // Toggle delete icon when item is clicked
                     setTouchActive(touchActive === id ? null : id); // Toggle touch active when item is touched
                     setShowDetails(showDetails === id ? null : id); // Toggle show details when item is clicked
+                    setShowAirDate(showAirDate === id ? null : id); // Toggle air date when item is clicked
                 }
 
                 function handleUpdate() {
@@ -286,7 +289,14 @@
                                             <div className="watching-show-list-item-content">
                                                 <h2 className={showDetails === show.trakt ? 'visible' : 'hidden'}>{show.title}</h2>
                                                 {show.season != null && show.episode != null && (
-                                                    <p className={`show-season ${showDetails === show.trakt ? 'visible' : 'hidden'}`}>S{show.season} E{show.episode}</p>
+                                                    <div className={`show-season-air-date ${showDetails === show.trakt ? 'visible' : 'hidden'}`}>
+                                                        <p>S{show.season} E{show.episode}</p>
+                                                        {show.air_date && (
+                                                            <p className="show-air-date">
+                                                                {`${new Date(show.air_date).getHours().toString().padStart(2, '0')}:${new Date(show.air_date).getMinutes().toString().padStart(2, '0')}`}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 )}
                                                 {show.season != null && show.episode != null && show.countdown && (
                                                     <div className="countdown">
@@ -314,7 +324,6 @@
                                                 </button>
                                             </div>
                                         </li>
-
                                     )}
                                 </ul>
                                 <button className="refresh-list-button" onClick={handleUpdate}>
