@@ -75,6 +75,7 @@
                 const [fadeIn, setFadeIn] = React.useState(false); // State variable for fade-in effect
                 const [showDelete, setShowDelete] = React.useState(null); // State for showing delete icon
                 const [touchActive, setTouchActive] = React.useState(null); // State for touch active
+                const [showDetails, setShowDetails] = React.useState(null); // State for displaying show details in list
                 const countdownInterval = React.useRef(null);
 
                 const urlDataElement = document.getElementById('url-data');
@@ -225,6 +226,7 @@
                 function handleItemClick(id) {
                     setShowDelete(showDelete === id ? null : id); // Toggle delete icon when item is clicked
                     setTouchActive(touchActive === id ? null : id); // Toggle touch active when item is touched
+                    setShowDetails(showDetails === id ? null : id); // Toggle show details when item is clicked
                 }
 
                 function handleUpdate() {
@@ -275,33 +277,30 @@
                                     {watchingShows.map((show, index) =>
                                         <li key={show.trakt} className={`watching-show-item fade-in ${touchActive === show.trakt ? 'touch-active' : ''}`}
                                             style={{animationDelay: `${index * 0.1}s`}}
-                                            onClick={() => handleItemClick(show.trakt)} // Event handler for item click
+                                            onClick={() => { handleItemClick(show.trakt); }} // Event handler for item click
                                         >
                                             <div className="watching-show-list-item-background" style={{
                                                 backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
                                             </div>
                                             <div className="watching-show-list-item-content">
-                                                <h2>{show.title}</h2>
+                                                <h2 className={showDetails === show.trakt ? 'visible' : 'hidden'}>{show.title}</h2>
+                                                {show.season != null && show.episode != null && (
+                                                    <p className={`show-season ${showDetails === show.trakt ? 'visible' : 'hidden'}`}>S{show.season} E{show.episode}</p>
+                                                )}
                                                 {show.season != null && show.episode != null && show.countdown && (
-                                                    <>
-                                                        <p className="show-season">S{show.season} E{show.episode}</p>
-                                                        <div className="countdown">
-                                                            <ul>
-                                                                <li><span>{show.countdown.days}</span>Days</li>
-                                                                <li><span>{show.countdown.hours}</span>Hours</li>
-                                                                <li><span>{show.countdown.minutes}</span>Minutes</li>
-                                                            </ul>
-                                                        </div>
-                                                    </>
+                                                    <div className="countdown">
+                                                        <ul>
+                                                            <li><span>{show.countdown.days}</span>Days</li>
+                                                            <li><span>{show.countdown.hours}</span>Hours</li>
+                                                            <li><span>{show.countdown.minutes}</span>Minutes</li>
+                                                        </ul>
+                                                    </div>
                                                 )}
                                                 {show.season == null && show.episode == null && (
-                                                    <>
-                                                        <p className="show-status">{show.status}</p>
-                                                    </>
+                                                    <p className="show-status">{show.status}</p>
                                                 )}
                                                 <button 
-                                                    className="delete-button" 
-                                                    style={{visibility: showDelete === show.trakt ? 'visible' : 'hidden'}} // Change visibility based on showDelete state
+                                                    className={`delete-button ${showDelete === show.trakt ? 'visible' : 'hidden'}`} // Change visibility based on showDelete state
                                                     onClick={(e) => {
                                                         e.stopPropagation(); // Stop the click event from bubbling to the parent element
                                                         handleDelete(show.trakt);
