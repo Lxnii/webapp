@@ -5,6 +5,7 @@
     <head>
         <link rel="stylesheet" type="text/css" href="{% static 'mytvtime/css/style.css' %}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
         <title>My TV Time</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
@@ -297,7 +298,10 @@
                                                     </div>
                                                 )}
                                                 {show.season == null && show.episode == null && (
-                                                    <p className="show-status">{show.status}</p>
+                                                    <p className={`show-status ${showDetails === show.trakt ? 'visible' : 'hidden'}`}>{show.status}</p>
+                                                )}
+                                                {show.season == null && show.episode == null && (
+                                                    <i className={`far fa-clock no-air-date-icon ${showDetails === show.trakt ? 'hidden' : 'visible'}`}></i>
                                                 )}
                                                 <button 
                                                     className={`delete-button ${showDelete === show.trakt ? 'visible' : 'hidden'}`} // Change visibility based on showDelete state
@@ -310,6 +314,7 @@
                                                 </button>
                                             </div>
                                         </li>
+
                                     )}
                                 </ul>
                                 <button className="refresh-list-button" onClick={handleUpdate}>
