@@ -26,27 +26,18 @@
         <input type="text" name="search_query" placeholder="Search for a TV show" autocomplete="off">
         <button type="submit"><i class="fas fa-search"></i></button>
     </form>
-    <script>
-        function clearStorage() {
-            sessionStorage.removeItem('shows');
-            localStorage.removeItem('watchingShowsData');
-            localStorage.removeItem('watchingShowsTime');
-        }
-    </script>
     <div class="search-results-list-container">
         <h2>Search Results for "{{ search_query }}":</h2>
         <ul class="search-results-list">
             {% for result in search_results %}
                 <div class="search-results-item-container">
-                    {% if result.show.poster_url == None %}
-                        <li class="search-results-item">
+                    <li class="search-results-item {% if not result.show.poster_url %}search-results-item-default-poster{% endif %}"
+                        data-poster-url="{{ result.show.poster_url }}">
+                        {% if not result.show.poster_url %}
                             <h3>{{ result.show.title }}</h3>
                             <p>Year: {{ result.show.year }}</p>
-                        </li>
-                    {% else %}
-                        <li class="search-results-item" style="background-image: url('{{ result.show.poster_url }}');">
-                        </li>
-                    {% endif %}
+                        {% endif %}
+                    </li>
                     {% if request.user.is_authenticated %}
                         <a href="{% url 'mytvtime:add_to_watchlist' result.show.ids.trakt %}" onclick="clearStorage();" class="search-results-add-button">Add to Watchlist</a>
                     {% endif %}
@@ -58,6 +49,23 @@
     </div>
     <!-- Back to home page -->
     <a class="search-back-button" href="/">Back to Home</a> 
-
+    
+    <!-- JavaScript -->
+    <script>
+        document.querySelectorAll('.search-results-item').forEach(item => {
+            const posterUrl = item.getAttribute('data-poster-url');
+            if (posterUrl && posterUrl !== 'None') {
+                item.style.backgroundImage = `url(${posterUrl})`;
+                item.classList.remove('search-results-item-default-poster');  // Remove the default-poster class
+            }
+        });
+    </script>
+    <script>
+        function clearStorage() {
+            sessionStorage.removeItem('shows');
+            localStorage.removeItem('watchingShowsData');
+            localStorage.removeItem('watchingShowsTime');
+        }
+    </script>
 </body>
 </html>

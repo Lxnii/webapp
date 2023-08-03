@@ -182,6 +182,13 @@
     z-index: 1;
 }
 
+.search-results-item-default-poster {
+    background-image: url('/static/mytvtime/img/default_poster.png');
+    background-size: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .search-results-add-button {
     background-color: rgba(0, 0, 0, 0.7);
     border: none;
