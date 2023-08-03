@@ -1,12 +1,14 @@
 import os, sys, requests, json, logging
-from django.utils import timezone
-from dateutil.parser import isoparse
-from django.shortcuts import render, redirect, get_object_or_404
+
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib import messages
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+
 from configparser import ConfigParser
 from .models import Show, Watchlist, NextEpisode
 
@@ -205,8 +207,8 @@ def update_show_info(show):
             next_episode.title = next_episode_details.get('title')
             next_episode.season = next_episode_details.get('season')
             next_episode.number = next_episode_details.get('number')
-            next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
-            next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+            next_episode.air_date = parse_datetime(next_episode_details.get('first_aired'))
+            next_episode.trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
             next_episode.save()
         except Exception as e:
             logger.info(f'Error updating show_NextEpisode {show.slug}, id: {show.trakt_id}, error: {e}')
@@ -277,8 +279,8 @@ def add_show_to_watchlist(request, trakt_id):
                 'title': next_episode_details.get('title'),
                 'season': next_episode_details.get('season'),
                 'number': next_episode_details.get('number'),
-                'air_date': isoparse(next_episode_details.get('first_aired')),
-                'trakt_updated_at': isoparse(next_episode_details.get('updated_at'))})
+                'air_date': parse_datetime(next_episode_details.get('first_aired')),
+                'trakt_updated_at': parse_datetime(next_episode_details.get('updated_at'))})
         next_episode.save()
     # Create a new Watchlist entry for the current user and the selected show
     Watchlist.objects.get_or_create(user=request.user, show=show)
@@ -308,9 +310,9 @@ def add_show_to_watchlist(request, trakt_id):
 #                     next_episode.title = next_episode_details.get('title')
 #                     next_episode.season = next_episode_details.get('season')
 #                     next_episode.number = next_episode_details.get('number')
-#                     next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
-#                     next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
-#                     # test_show_next_episode_trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+#                     next_episode.air_date = parse_datetime(next_episode_details.get('first_aired'))
+#                     next_episode.trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
+#                     # test_show_next_episode_trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
 #                     next_episode.save()
 #                 # Get the updated next episode
 #                 next_episode = show.next_episode.first() if show.next_episode.exists() else None
@@ -397,8 +399,8 @@ def get_watching_shows(request):
                 next_episode.title = next_episode_details.get('title')
                 next_episode.season = next_episode_details.get('season')
                 next_episode.number = next_episode_details.get('number')
-                next_episode.air_date = isoparse(next_episode_details.get('first_aired'))
-                next_episode.trakt_updated_at = isoparse(next_episode_details.get('updated_at'))
+                next_episode.air_date = parse_datetime(next_episode_details.get('first_aired'))
+                next_episode.trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
                 next_episode.save()
 
             # Get the updated next episode
