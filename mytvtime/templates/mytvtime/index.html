@@ -66,7 +66,43 @@
                 }
                 return cookieValue;
             }
-            
+
+            const sortShows = (shows) => {
+                return shows.sort((a, b) => {
+                    if (a.air_date && b.air_date) {
+                        return new Date(a.air_date) - new Date(b.air_date);
+                    }
+                    if (a.air_date) {
+                        return -1;
+                    }
+                    if (b.air_date) {
+                        return 1;
+                    }
+
+                    if (a.status.toLowerCase() === 'returning series' && b.status.toLowerCase() === 'returning series') {
+                        return 0;
+                    }
+                    if (a.status.toLowerCase() === 'returning series') {
+                        return -1;
+                    }
+                    if (b.status.toLowerCase() === 'returning series') {
+                        return 1;
+                    }
+
+                    if (a.status.toLowerCase() === 'ended' && b.status.toLowerCase() === 'ended') {
+                        return 0;
+                    }
+                    if (a.status.toLowerCase() === 'ended') {
+                        return 1;
+                    }
+                    if (b.status.toLowerCase() === 'ended') {
+                        return -1;
+                    }
+
+                    return a.title.localeCompare(b.title);
+                });
+            };
+
             function WatchingShows() {
                 const [watchingShows, setWatchingShows] = React.useState([]);
                 const [isLoading, setIsLoading] = React.useState(true);
@@ -90,21 +126,33 @@
 
                 const updateCountdowns = () => {
                     setWatchingShows((prevWatchingShows) => {
-                        return prevWatchingShows.map((show) => {
+                        let needSort = false;
+                        let updatedShows = prevWatchingShows.map((show) => {
                             if (show.air_date) {
-                                // Calculate the countdown using the air_date
                                 let airDate = new Date(show.air_date);
                                 let now = new Date();
-                                let diff = airDate - now;
-
-                                show.countdown = {
-                                    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-                                    hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                                    minutes: Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60))
-                                };
+                                if (airDate - now < 0) {
+                                    show.air_date = null;
+                                    show.countdown = null;
+                                    show.season = null;
+                                    show.episode = null;
+                                    needSort = true;
+                                } else {
+                                    let diff = airDate - now;
+                                    let totalMinutes = Math.ceil(diff / (1000 * 60));
+                                    show.countdown = {
+                                        days: Math.floor(totalMinutes / (60 * 24)),
+                                        hours: Math.floor((totalMinutes % (60 * 24)) / 60),
+                                        minutes: totalMinutes % 60
+                                    };
+                                }
                             }
                             return show;
                         });
+                        if (needSort) {
+                            updatedShows = sortShows(updatedShows);
+                        }
+                        return updatedShows;
                     });
                 };
 
@@ -124,17 +172,25 @@
                                     // Calculate the countdown using the air_date
                                     let airDate = new Date(show.air_date);
                                     let now = new Date();
-                                    let diff = airDate - now;
-                                    
-                                    // Calculate the delay for the first countdown refresh
-                                    let delay = diff % (1000 * 60);
-                                    show.delay = delay;
-
-                                    show.countdown = {
-                                        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-                                        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                                        minutes: Math.ceil((diff % (1000 * 60 * 60)) / (1000 * 60))
-                                    };
+                                    if (airDate - now < 0) {
+                                        show.air_date = null;
+                                        show.countdown = null;
+                                        show.season = null;
+                                        show.episode = null
+                                    }
+                                    else {
+                                        let diff = airDate - now;
+                                        // Calculate the delay for the first countdown refresh
+                                        let delay = diff % (1000 * 60);
+                                        show.delay = delay;
+                                        
+                                        let totalMinutes = Math.ceil(diff / (1000 * 60)); 
+                                        show.countdown = {
+                                            days: Math.floor(totalMinutes / (60 * 24)),
+                                            hours: Math.floor((totalMinutes % (60 * 24)) / 60),
+                                            minutes: totalMinutes % 60
+                                        };
+                                    }
                                 } else {
                                     show.countdown = null;
                                 }
@@ -147,39 +203,7 @@
                             }, Math.min(...watchingShows.filter(show => show.air_date).map(show => show.delay)));
                         
                             // Sort the shows data
-                            watchingShows.sort((a, b) => {
-                                if (a.air_date && b.air_date) {
-                                    return new Date(a.air_date) - new Date(b.air_date);
-                                }
-                                if (a.air_date) {
-                                    return -1;
-                                }
-                                if (b.air_date) {
-                                    return 1;
-                                }
-
-                                if (a.status.toLowerCase() === 'returning' && b.status.toLowerCase() === 'returning') {
-                                    return 0;
-                                }
-                                if (a.status.toLowerCase() === 'returning') {
-                                    return -1;
-                                }
-                                if (b.status.toLowerCase() === 'returning') {
-                                    return 1;
-                                }
-
-                                if (a.status.toLowerCase() === 'ended' && b.status.toLowerCase() === 'ended') {
-                                    return 0;
-                                }
-                                if (a.status.toLowerCase() === 'ended') {
-                                    return 1;
-                                }
-                                if (b.status.toLowerCase() === 'ended') {
-                                    return -1;
-                                }
-
-                                return a.title.localeCompare(b.title);
-                            });
+                            watchingShows = sortShows(watchingShows);
                             setWatchingShows(watchingShows);
                             setIsLoading(false);
                         })
