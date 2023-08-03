@@ -97,22 +97,6 @@ def search_results(request):
             # Call the Trakt API to search for shows
             search_results = search_shows_on_trakt(search_query)
 
-            # Pass the search results to the frontend page for display
-            context = {
-                'search_query': search_query,
-                'search_results': search_results,
-            }
-            return render(request, 'mytvtime/search_results.html', context)
-
-    return render(request, 'mytvtime/index.html')
-def search_results(request):
-    if request.method == 'POST':
-        search_query = request.POST.get('search_query', '')
-
-        if search_query:
-            # Call the Trakt API to search for shows
-            search_results = search_shows_on_trakt(search_query)
-
             # Add a poster_url from TMDB to each search result
             for result in search_results:
                 tmdb_id = result['show']['ids']['tmdb']
