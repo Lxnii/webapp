@@ -10,14 +10,13 @@ My TV Time is a web application that allows users to search, track, and view det
 ## ✨ Features
 
 - 📺 Search for TV shows from a vast database.
-- 📌 Add or remove TV shows from your personalized watchlist.
-- 📑 View detailed information about each TV show, including the next episode's info.
+- 📌 Personalize your watch list for TV shows.
+- 📑 View and track details of each TV show, including the next episode info.
 - 👤 User authentication system.
 
 ## 🚀 Next steps 
-- **Introduce Django Rest Framework (DRF)**: Integrate DRF to build a RESTful API for seamless data exchange between the front end and back end, further enabling a decoupled architecture.
-- **Advanced Search**: Enhance the search feature by adding filters for genres, release year, ratings, etc.
-- **Progressive Web App (PWA)**: Enhance the user experience by allowing offline access, enabling push notifications, and allowing the app to be installed on the user's device.
+- **Introduce Django Rest Framework (DRF)**: Integrate DRF to build a RESTful API for seamless data exchange between the front end and back end.
+- **Progressive Web App (PWA)**: Installed on PWA-enabled devices.
 - **Notifications**: Implement a notification system for new episodes or updates to shows on a user's watchlist.
 - **Offline Access**: Implement service workers for offline access and faster load times.
 
