@@ -107,7 +107,7 @@ class Watched(models.Model):
         return f"{self.user.username} - {self.episode}"
 
 class NextEpisode(models.Model):
-    show = models.ForeignKey(Show, on_delete=models.CASCADE, related_name='next_episode')
+    show = models.OneToOneField(Show, on_delete=models.CASCADE, related_name='next_episode')
     title = models.CharField(max_length=255, blank=True, null=True)
     season = models.IntegerField()
     number = models.IntegerField()

@@ -203,12 +203,13 @@ def update_show_info(show):
     next_episode_details = show_details.get('next_episode')
     if next_episode_details:
         try:
-            next_episode, created = NextEpisode.objects.update_or_create(show=show)
-            next_episode.title = next_episode_details.get('title')
-            next_episode.season = next_episode_details.get('season')
-            next_episode.number = next_episode_details.get('number')
-            next_episode.air_date = parse_datetime(next_episode_details.get('first_aired'))
-            next_episode.trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
+            next_episode, created = NextEpisode.objects.update_or_create(show=show,
+                defaults={
+                    'title': next_episode_details.get('title'),
+                    'season': next_episode_details.get('season'),
+                    'number': next_episode_details.get('number'),
+                    'air_date': parse_datetime(next_episode_details.get('first_aired')),
+                    'trakt_updated_at': parse_datetime(next_episode_details.get('updated_at'))})
             next_episode.save()
         except Exception as e:
             logger.info(f'Error updating show_NextEpisode {show.slug}, id: {show.trakt_id}, error: {e}')
@@ -274,18 +275,20 @@ def add_show_to_watchlist(request, trakt_id):
     next_episode_details = selected_show_data.get('next_episode')
 
     if next_episode_details:
-        next_episode, created = NextEpisode.objects.update_or_create(show=show,
-            defaults={
-                'title': next_episode_details.get('title'),
-                'season': next_episode_details.get('season'),
-                'number': next_episode_details.get('number'),
-                'air_date': parse_datetime(next_episode_details.get('first_aired')),
-                'trakt_updated_at': parse_datetime(next_episode_details.get('updated_at'))})
-        next_episode.save()
+        try:
+            next_episode, created = NextEpisode.objects.update_or_create(show=show,
+                defaults={
+                    'title': next_episode_details.get('title'),
+                    'season': next_episode_details.get('season'),
+                    'number': next_episode_details.get('number'),
+                    'air_date': parse_datetime(next_episode_details.get('first_aired')),
+                    'trakt_updated_at': parse_datetime(next_episode_details.get('updated_at'))})
+            next_episode.save()
+        except Exception as e:
+            logger.info(f'Error adding show_NextEpisode to Watchlist {show.slug}, id: {show.trakt_id}, error: {e}')
     # Create a new Watchlist entry for the current user and the selected show
     Watchlist.objects.get_or_create(user=request.user, show=show)
     return redirect('mytvtime:index')
-
 
 # @login_required
 # def get_watching_shows(request):
@@ -387,24 +390,15 @@ def get_watching_shows(request):
     shows_data = []
     for watchlist_item in user_watchlist:
         show = watchlist_item.show
-        next_episode = show.next_episode.first() if show.next_episode.exists() else None
-
+        try:
+            next_episode = show.next_episode
+        except NextEpisode.DoesNotExist:
+            next_episode = None
         # If the next episode has aired, update the show and next episode details
         if next_episode and next_episode.air_date and next_episode.air_date < timezone.now():
-            show_details = get_show_details_from_trakt(show.trakt_id)
-
-            # Update the next episode info to the database
-            next_episode_details = show_details.get('next_episode')
-            if next_episode_details:
-                next_episode.title = next_episode_details.get('title')
-                next_episode.season = next_episode_details.get('season')
-                next_episode.number = next_episode_details.get('number')
-                next_episode.air_date = parse_datetime(next_episode_details.get('first_aired'))
-                next_episode.trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
-                next_episode.save()
-
-            # Get the updated next episode
-            next_episode = show.next_episode.first() if show.next_episode.exists() else None
+            update_show_info(show)  # Update the show data
+            show.refresh_from_db()
+            next_episode = show.next_episode
 
         # Prepare the data for a single show
         watching_show = {
