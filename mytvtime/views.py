@@ -101,7 +101,9 @@ def search_results(request):
 
             # Add a poster_url from TMDB to each search result
             for result in search_results:
-                tmdb_id = result['show']['ids']['tmdb']
+                tmdb_id = result['show']['ids'].get('tmdb')
+                if tmdb_id is None:
+                    continue
                 images_url = get_show_images_from_tmdb(tmdb_id)
                 if images_url is not None:
                     result['show']['poster_url'] = images_url['poster_w780_url']

@@ -1,5 +1,5 @@
 <!-- index.html -->
-{% load static %} 
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -36,8 +36,8 @@
         <!-- React CDN Link -->
         <script defer crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
         <script defer crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-        <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-        <script defer src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script defer src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
+        <script defer src="https://unpkg.com/axios@1.6.8/dist/axios.min.js"></script>
         {% verbatim %}
         <div id="app"></div>
         <script>
@@ -47,11 +47,11 @@
                 sessionStorage.removeItem("shows");
                 localStorage.removeItem('watchingShowsData');
                 localStorage.removeItem('watchingShowsTime');
-                
+
                 window.location.href = logoutUrl;
             }
-        </script> 
-        <script type="text/babel">
+        </script>
+        <script type="text/babel" data-type="module">
             function getCookie(name) {
                 let cookieValue = null;
                 if (document.cookie && document.cookie !== '') {
@@ -123,7 +123,7 @@
                 const searchResultsUrl = urlDataElement.getAttribute('data-search-results-url');
                 const authStatusElement = document.getElementById('auth-status');
                 const isAuthenticatedStatus = authStatusElement.textContent === 'true';
-                
+
                 const getAbbreviatedDayOfWeek = (date) => {
                     const daysOfWeekAbbreviated = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
                     const dayIndex = date.getDay();
@@ -189,8 +189,8 @@
                                         // Calculate the delay for the first countdown refresh
                                         let delay = diff % (1000 * 60);
                                         show.delay = delay;
-                                        
-                                        let totalMinutes = Math.ceil(diff / (1000 * 60)); 
+
+                                        let totalMinutes = Math.ceil(diff / (1000 * 60));
                                         show.countdown = {
                                             days: Math.floor(totalMinutes / (60 * 24)),
                                             hours: Math.floor((totalMinutes % (60 * 24)) / 60),
@@ -207,7 +207,7 @@
                                 updateCountdowns();
                                 countdownInterval.current = setInterval(updateCountdowns, 60000);
                             }, Math.min(...watchingShows.filter(show => show.air_date).map(show => show.delay)));
-                        
+
                             // Sort the shows data
                             watchingShows = sortShows(watchingShows);
                             setWatchingShows(watchingShows);
@@ -234,7 +234,7 @@
 
                     return () => clearTimeout(timer);
                 }, []);
-                
+
                 function handleDelete(id) {
                     const csrftoken = getCookie('csrftoken');
                     axios({
@@ -345,7 +345,7 @@
                                                 {show.season == null && show.episode == null && (
                                                     <i className={`far fa-clock no-air-date-icon ${showDetails === show.trakt ? 'hidden' : 'visible'}`}></i>
                                                 )}
-                                                <button 
+                                                <button
                                                     className={`delete-button ${showDelete === show.trakt ? 'visible' : 'hidden'}`} // Change visibility based on showDelete state
                                                     onClick={(e) => {
                                                         e.stopPropagation(); // Stop the click event from bubbling to the parent element
