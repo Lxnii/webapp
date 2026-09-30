@@ -1,4 +1,5 @@
-import os, sys, requests, json, logging
+import os, re, html, time, requests, json, logging
+from concurrent.futures import ThreadPoolExecutor
 
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
@@ -7,12 +8,22 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
+from datetime import datetime, timezone as dt_timezone
 from django.utils.dateparse import parse_datetime
-
 from configparser import ConfigParser
+
 from .models import Show, Watchlist, NextEpisode
 
 logger = logging.getLogger(__name__)
+
+TVMAZE_API_URL = 'https://api.tvmaze.com'
+tvmaze_headers = {
+    'Accept': 'application/json'
+    }
+# TVmaze sends back no rate limit headers, but the documented limit is
+# 20 requests / 10 seconds per IP, so keep a pause between calls when looping
+# over many shows (used by the watchlist refresh paths).
+TVMAZE_REQUEST_INTERVAL = 0.2
 
 def get_api_key(api_name):
     config = ConfigParser()
@@ -21,17 +32,34 @@ def get_api_key(api_name):
     config.read(config_file)
     return config.get(api_name, 'api_key')
 
-trakt_api_key = get_api_key('trakt')
-tmdb_api_key = get_api_key('tmdb')
+# TVmaze supplies the show data (search, details, air dates) and TMDB supplies
+# the artwork (posters and backdrops). TMDB is optional: without a key the app
+# still runs, just with TVmaze's poster and no backdrop.
+try:
+    tmdb_api_key = get_api_key('tmdb')
+except Exception:
+    tmdb_api_key = None
 
-trakt_headers = {
-    'Content-Type': 'application/json',
-    'trakt-api-version': '2',
-    'trakt-api-key': trakt_api_key
-    }
+if not tmdb_api_key:
+    logger.warning('No [tmdb] api_key found in config.ini, TMDB artwork is disabled')
+
+TMDB_API_URL = 'https://api.themoviedb.org/3'
+TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p'
 tmdb_headers = {
     'accept': 'application/json',
     'Authorization': tmdb_api_key
+    } if tmdb_api_key else {}
+# How many TMDB lookups to run at once when decorating search results.
+TMDB_SEARCH_WORKERS = 8
+
+# TVmaze uses its own status vocabulary; the rest of the app (and the frontend
+# sorting in index.html) was written against Trakt's, so normalise to that.
+TVMAZE_STATUS_MAP = {
+    'running': 'returning series',
+    'ended': 'ended',
+    'cancelled': 'canceled',
+    'to be determined': 'returning series',
+    'in development': 'in development',
     }
 
 def index(request):
@@ -72,43 +100,263 @@ def logout(request):
     django_logout(request)
     return redirect('mytvtime:index')
 
-def search_shows_on_trakt(query):
-    # Set Trakt API parameters
-    trakt_api_url = 'https://api.trakt.tv/search/show?extended=full'
-    params = {
-        'query': query,
-    }
-    try:
-        # Send a GET request to the Trakt API
-        response = requests.get(trakt_api_url, headers=trakt_headers, params=params)
-        response.raise_for_status()  # Raises a HTTPError if the response status is 4xx, 5xx
+def strip_html_tags(value):
+    # TVmaze returns summaries as HTML (e.g. "<p><b>Breaking Bad</b> follows...</p>").
+    if not value:
+        return value
+    text = re.sub(r'<[^>]+>', ' ', value)
+    return re.sub(r'\s+', ' ', html.unescape(text)).strip()
 
-        # Parse the JSON data and return the search results if successful
-        search_results = response.json()
-        return search_results
+def tvmaze_get(path, **params):
+    """GET a TVmaze endpoint, retrying once if the rate limit (HTTP 429) is hit.
+
+    TVmaze needs no API key and no OAuth. See https://www.tvmaze.com/api
+    """
+    url = f'{TVMAZE_API_URL}{path}'
+    response = None
+    for attempt in range(2):
+        response = requests.get(url, headers=tvmaze_headers, params=params or None, timeout=10)
+        if response.status_code != 429:
+            return response
+        try:
+            delay = float(response.headers.get('Retry-After', ''))
+        except (TypeError, ValueError):
+            delay = 1.0
+        logger.info(f'TVmaze rate limited on {path}, retrying in {delay}s')
+        time.sleep(max(delay, TVMAZE_REQUEST_INTERVAL))
+    return response
+
+def unix_to_datetime(unix_timestamp):
+    """TVmaze reports a show's "updated" field as a Unix timestamp."""
+    if not unix_timestamp:
+        return None
+    return datetime.fromtimestamp(unix_timestamp, tz=dt_timezone.utc)
+
+def map_tvmaze_status(status):
+    if not status:
+        return None
+    return TVMAZE_STATUS_MAP.get(status.strip().lower(), status.strip().lower())
+
+def search_shows_on_tvmaze(query):
+    """Search TVmaze and return its raw list of {"score", "show"} dicts."""
+    try:
+        response = tvmaze_get('/search/shows', q=query)
+        response.raise_for_status()  # Raises a HTTPError if the response status is 4xx, 5xx
+        return response.json()
 
     except requests.exceptions.RequestException as e:
-        print(f"Error occurred when searching shows on Trakt API: {e}")
+        logger.info(f'Error occurred when searching shows on TVmaze API: {e}')
         return []
+
+def normalize_tvmaze_show(tvmaze_show):
+    """Map a TVmaze show object onto the fields this app displays/stores."""
+    if not tvmaze_show:
+        return None
+    premiered = tvmaze_show.get('premiered') or ''
+    year = int(premiered[:4]) if premiered[:4].isdigit() else None
+    image = tvmaze_show.get('image') or {}
+    externals = tvmaze_show.get('externals') or {}
+    return {
+        # TVmaze's own id. It is unrelated to Trakt's id sequence, which is why
+        # migration 0008 remapped the stored ids when the source was switched.
+        'tvmaze_id': tvmaze_show.get('id'),
+        'title': tvmaze_show.get('name'),
+        'year': year,
+        'status': map_tvmaze_status(tvmaze_show.get('status')),
+        'overview': strip_html_tags(tvmaze_show.get('summary')),
+        # TVmaze has no TMDB id, and not every show carries an IMDb id.
+        'imdb_id': externals.get('imdb'),
+        'slug': (tvmaze_show.get('url') or '').rstrip('/').rsplit('/', 1)[-1] or None,
+        # TVmaze only ships portrait posters, no backdrops.
+        'poster_url': image.get('original') or image.get('medium'),
+        'backdrop_url': None,
+        'updated_at': unix_to_datetime(tvmaze_show.get('updated')),
+    }
+
+def normalize_tvmaze_episode(tvmaze_episode):
+    """Map a TVmaze episode object onto the fields NextEpisode stores."""
+    if not tvmaze_episode:
+        return None
+    first_aired = tvmaze_episode.get('airstamp')
+    if not first_aired and tvmaze_episode.get('airdate'):
+        # airstamp is missing for some episodes; fall back to the air date.
+        first_aired = f"{tvmaze_episode['airdate']}T00:00:00+00:00"
+    return {
+        'title': tvmaze_episode.get('name'),
+        'season': tvmaze_episode.get('season'),
+        'number': tvmaze_episode.get('number'),
+        'first_aired': first_aired,
+        # TVmaze has no "updated" timestamp for episodes.
+        'updated_at': None,
+    }
+
+def get_show_details_from_tvmaze(show_id):
+    """Return normalised show details plus a 'next_episode' key (or None).
+
+    The next episode comes from the embedded nextepisode, so a single request
+    is enough - the TVmaze equivalent of Trakt's /shows/{id}/next_episode.
+    """
+    try:
+        response = tvmaze_get(f'/shows/{show_id}', embed='nextepisode')
+    except requests.exceptions.RequestException as e:
+        logger.info(f'Error occurred when getting show details from TVmaze API: {e}')
+        return None
+
+    if response.status_code == 404:
+        logger.info(f'Show {show_id} does not exist on TVmaze')
+        return None
+    response.raise_for_status()
+
+    payload = response.json()
+    show_details = normalize_tvmaze_show(payload)
+    if show_details is None:
+        return None
+    embedded = payload.get('_embedded') or {}
+    show_details['next_episode'] = normalize_tvmaze_episode(embedded.get('nextepisode'))
+    return show_details
+
+def tmdb_image_url(file_path, size):
+    return f'{TMDB_IMAGE_URL}/{size}{file_path}' if file_path else None
+
+def tmdb_get(path, **params):
+    """GET a TMDB endpoint. Returns None when TMDB is unavailable or has no match."""
+    if not tmdb_api_key:
+        return None
+    try:
+        response = requests.get(f'{TMDB_API_URL}{path}', headers=tmdb_headers,
+                                params=params or None, timeout=10)
+        if response.status_code == 404:
+            return None
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        logger.info(f'Error occurred when calling TMDB {path}: {e}')
+        return None
+
+def best_tmdb_image(images, preferred_languages=(None, 'en')):
+    """Pick the nicest artwork: prefer textless (or English) artwork, then the
+    best voted one. TVmaze has no backdrops, so this is the wallpaper source."""
+    def rank(image):
+        language = image.get('iso_639_1')
+        try:
+            language_rank = preferred_languages.index(language)
+        except ValueError:
+            language_rank = len(preferred_languages)
+        return (language_rank, -(image.get('vote_count') or 0), -(image.get('vote_average') or 0))
+    return min(images, key=rank) if images else None
+
+def resolve_tmdb_id(imdb_id=None, title=None, year=None, known_id=None):
+    """Return a TMDB tv id, preferring the one already stored for the show.
+
+    TVmaze has no TMDB id, so new shows are matched through their IMDb id and,
+    failing that, through a title/year search.
+    """
+    if known_id:
+        return known_id
+    if imdb_id:
+        payload = tmdb_get(f'/find/{imdb_id}', external_source='imdb_id')
+        results = (payload or {}).get('tv_results') or []
+        if results:
+            return results[0].get('id')
+    if title:
+        params = {'query': title, 'include_adult': 'false'}
+        if year:
+            params['first_air_date_year'] = year
+        payload = tmdb_get('/search/tv', **params)
+        results = (payload or {}).get('results') or []
+        if results:
+            return results[0].get('id')
+    return None
+
+def find_tmdb_artwork(imdb_id=None, title=None, year=None):
+    """Resolve a TMDB show and its artwork with a single request.
+
+    /find and /search/tv both return poster_path and backdrop_path, so
+    decorating a search result costs one TMDB request instead of two.
+    """
+    result = None
+    if imdb_id:
+        payload = tmdb_get(f'/find/{imdb_id}', external_source='imdb_id')
+        results = (payload or {}).get('tv_results') or []
+        result = results[0] if results else None
+    if result is None and title:
+        params = {'query': title, 'include_adult': 'false'}
+        if year:
+            params['first_air_date_year'] = year
+        payload = tmdb_get('/search/tv', **params)
+        results = (payload or {}).get('results') or []
+        result = results[0] if results else None
+    if not result:
+        return None
+    return {
+        'tmdb_id': result.get('id'),
+        'poster_url': tmdb_image_url(result.get('poster_path'), 'w780'),
+        'backdrop_url': tmdb_image_url(result.get('backdrop_path'), 'w780'),
+    }
+
+def get_show_artwork(tmdb_id=None, imdb_id=None, title=None, year=None):
+    """TMDB artwork for a tracked show: full-size poster and best backdrop.
+
+    Returns {'tmdb_id', 'poster_url', 'poster_w780_url', 'backdrop_url',
+    'backdrop_w780_url'}, or None when TMDB cannot provide anything.
+    """
+    resolved_id = resolve_tmdb_id(imdb_id=imdb_id, title=title, year=year, known_id=tmdb_id)
+    payload = tmdb_get(f'/tv/{resolved_id}', append_to_response='images') if resolved_id else None
+    if not payload:
+        # A stored id can go stale; resolve the show again before giving up.
+        fresh_id = resolve_tmdb_id(imdb_id=imdb_id, title=title, year=year)
+        if not fresh_id or fresh_id == resolved_id:
+            return None
+        resolved_id = fresh_id
+        payload = tmdb_get(f'/tv/{fresh_id}', append_to_response='images')
+        if not payload:
+            return None
+    images = payload.get('images') or {}
+    poster = best_tmdb_image(images.get('posters'), preferred_languages=('en', None))
+    backdrop = best_tmdb_image(images.get('backdrops'), preferred_languages=(None, 'en'))
+    poster_path = payload.get('poster_path') or (poster or {}).get('file_path')
+    backdrop_path = payload.get('backdrop_path') or (backdrop or {}).get('file_path')
+    return {
+        'tmdb_id': resolved_id,
+        'poster_url': tmdb_image_url(poster_path, 'original'),
+        'poster_w780_url': tmdb_image_url(poster_path, 'w780'),
+        'backdrop_url': tmdb_image_url(backdrop_path, 'original'),
+        'backdrop_w780_url': tmdb_image_url(backdrop_path, 'w780'),
+    }
+
+def apply_tmdb_artwork(show, artwork):
+    """Override a normalised show dict with TMDB artwork, never with None."""
+    if not artwork:
+        return show
+    for key in ('tmdb_id', 'poster_url', 'backdrop_url'):
+        if artwork.get(key):
+            show[key] = artwork[key]
+    return show
 
 def search_results(request):
     if request.method == 'POST':
         search_query = request.POST.get('search_query', '')
 
         if search_query:
-            # Call the Trakt API to search for shows
-            search_results = search_shows_on_trakt(search_query)
+            # Call the TVmaze API to search for shows
+            raw_results = search_shows_on_tvmaze(search_query)
 
-            # Add a poster_url from TMDB to each search result
-            for result in search_results:
-                tmdb_id = result['show']['ids'].get('tmdb')
-                if tmdb_id is None:
-                    continue
-                images_url = get_show_images_from_tmdb(tmdb_id)
-                if images_url is not None:
-                    result['show']['poster_url'] = images_url['poster_w780_url']
-                else:
-                    result['show']['poster_url'] = None  # or set a default poster URL
+            search_results = []
+            for raw_result in raw_results:
+                show = normalize_tvmaze_show(raw_result.get('show'))
+                if show is not None:
+                    search_results.append(show)
+
+            # TMDB is the app's artwork source, so upgrade the TVmaze posters to
+            # TMDB ones (the TVmaze image stays as the fallback). The lookups are
+            # independent of each other, so run them concurrently.
+            if tmdb_api_key and search_results:
+                with ThreadPoolExecutor(max_workers=TMDB_SEARCH_WORKERS) as executor:
+                    artworks = list(executor.map(
+                        lambda show: find_tmdb_artwork(show.get('imdb_id'), show.get('title'), show.get('year')),
+                        search_results))
+                for show, artwork in zip(search_results, artworks):
+                    apply_tmdb_artwork(show, artwork)
 
             # Pass the search results to the frontend page for display
             context = {
@@ -119,106 +367,59 @@ def search_results(request):
 
     return render(request, 'mytvtime/index.html')
 
-# def get_show_details_from_trakt(show_id):
-#     trakt_api_url = f'https://api.trakt.tv/shows/{show_id}?extended=full'
-#     try:
-#         response = requests.get(trakt_api_url, headers=trakt_headers)
-#         response.raise_for_status()  # Raises a HTTPError if the response status is 4xx, 5xx
-#         show_details = response.json()
-#         return show_details
-#     except requests.exceptions.RequestException as e:
-#         print(f"Error occurred when getting show details from Trakt API: {e}")
-#         return None
+def save_next_episode(show, next_episode_details):
+    """Create, update or delete the NextEpisode row of a show.
 
-def get_show_details_from_trakt(show_id):
-
-    # URLs for Trakt API: Show Summary, Next Episode Info
-    trakt_api_url = f'https://api.trakt.tv/shows/{show_id}?extended=full'
-    trakt_api_next_episode_url = f'https://api.trakt.tv/shows/{show_id}/next_episode?extended=full'
-    
-    # Send a GET request to the Trakt API for show details
-    response = requests.get(trakt_api_url, headers=trakt_headers)
-    response.raise_for_status()
-    show_details = response.json()
-
-    # Try to get the next episode details
-    response = requests.get(trakt_api_next_episode_url, headers=trakt_headers)
-    
-    if response.status_code == 200:  # If the next episode exists
-        next_episode_details = response.json()
-
-        show_details.update({
-            'next_episode': {
+    TVmaze omits the embedded nextepisode (or leaves season/number empty) when
+    a show has no upcoming episode, which is the equivalent of Trakt's 204.
+    """
+    if not next_episode_details or next_episode_details.get('season') is None \
+            or next_episode_details.get('number') is None:
+        NextEpisode.objects.filter(show=show).delete()
+        return
+    try:
+        first_aired = next_episode_details.get('first_aired')
+        updated_at = next_episode_details.get('updated_at')
+        NextEpisode.objects.update_or_create(show=show,
+            defaults={
                 'title': next_episode_details.get('title'),
                 'season': next_episode_details.get('season'),
                 'number': next_episode_details.get('number'),
-                'first_aired': next_episode_details.get('first_aired'),
-                'updated_at': next_episode_details.get('updated_at')
-            }
-        })
-    elif response.status_code == 204:  # If the next episode does not exist
-        show_details.update({
-            'next_episode': None
-        })
-
-    return show_details
-
-def get_show_images_from_tmdb(tmdb_id):
-    tmdb_api_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}/images'
-    try:
-        response = requests.get(tmdb_api_url, headers=tmdb_headers)
-        response.raise_for_status()
-        show_details = response.json()
-        poster_path = show_details.get('posters',[])
-        poster_url = f'https://image.tmdb.org/t/p/original{poster_path[0]["file_path"]}' if poster_path else None
-        poster_w780_url = f'https://image.tmdb.org/t/p/w780{poster_path[0]["file_path"]}' if poster_path else None
-        backdrops_path = show_details.get('backdrops', [])
-        backdrop_url = f'https://image.tmdb.org/t/p/original{backdrops_path[0]["file_path"]}' if backdrops_path else None
-
-        return {'poster_url': poster_url, 
-                'poster_w780_url': poster_w780_url, 
-                'backdrop_url': backdrop_url}
-    except requests.exceptions.RequestException as e:
-        print(f"Error occurred when getting show images from TMDB API: {e}")
-        return None
+                'air_date': parse_datetime(first_aired) if first_aired else None,
+                'tvmaze_updated_at': parse_datetime(updated_at) if updated_at else None})
+    except Exception as e:
+        logger.info(f'Error updating show_NextEpisode {show.slug}, id: {show.tvmaze_id}, error: {e}')
 
 def update_show_info(show):
-    # This function updates a Show object with the latest information from the Trakt API
-    show_details = get_show_details_from_trakt(show.trakt_id)
-    # TMDb_id = show_details.get('ids', {}).get('tmdb')
-    images_url = get_show_images_from_tmdb(show.tmdb_id)
-    if images_url == None:
-        images_url ={'poster_url': None, 'poster_w780_url': None, 'backdrop_url': None}
+    # This function updates a Show object with the latest information from the TVmaze API
+    show_details = get_show_details_from_tvmaze(show.tvmaze_id)
+    if not show_details:
+        logger.info(f'No TVmaze data for show {show.tvmaze_id}, keeping the stored values')
+        return
     # Update the Show object with the new information
-    show.title = show_details.get('title')
+    show.title = show_details.get('title') or show.title
     show.year = show_details.get('year')
-    show.imdb_id = show_details.get('ids', {}).get('imdb')
-    show.tmdb_id = show_details.get('ids', {}).get('tmdb')
-    show.title = show_details.get('title')
-    show.slug = show_details.get('ids', {}).get('slug')
+    if show_details.get('imdb_id'):
+        # TVmaze does not always carry an IMDb id; never drop a known one.
+        show.imdb_id = show_details.get('imdb_id')
+    show.slug = show_details.get('slug') or show.slug
     show.status = show_details.get('status')
     show.overview = show_details.get('overview')
-    show.trakt_updated_at = show_details.get('updated_at')
-    show.poster_url = images_url.get('poster_url')
-    show.backdrop_url = images_url.get('backdrop_url')
-    # Get the next episode details
-    next_episode_details = show_details.get('next_episode')
-    if next_episode_details:
-        try:
-            next_episode, created = NextEpisode.objects.update_or_create(show=show,
-                defaults={
-                    'title': next_episode_details.get('title'),
-                    'season': next_episode_details.get('season'),
-                    'number': next_episode_details.get('number'),
-                    'air_date': parse_datetime(next_episode_details.get('first_aired')),
-                    'trakt_updated_at': parse_datetime(next_episode_details.get('updated_at'))})
-            next_episode.save()
-        except Exception as e:
-            logger.info(f'Error updating show_NextEpisode {show.slug}, id: {show.trakt_id}, error: {e}')
+    show.tvmaze_updated_at = show_details.get('updated_at')
+    # Artwork comes from TMDB; TVmaze only has a portrait poster as a fallback.
+    artwork = get_show_artwork(show.tmdb_id,
+        imdb_id=show_details.get('imdb_id') or show.imdb_id,
+        title=show_details.get('title'),
+        year=show_details.get('year'))
+    if artwork:
+        show.tmdb_id = artwork.get('tmdb_id') or show.tmdb_id
+        show.poster_url = artwork.get('poster_url') or show.poster_url or show_details.get('poster_url')
+        show.backdrop_url = artwork.get('backdrop_url') or show.backdrop_url
     else:
-    # If no next episode details available, delete the existing NextEpisode object from the database
-        NextEpisode.objects.filter(show=show).delete()
+        # TMDB could not help: keep the stored artwork, or fall back to TVmaze.
+        show.poster_url = show.poster_url or show_details.get('poster_url')
     show.save()
+    save_next_episode(show, show_details.get('next_episode'))
 
 def update_all_database_shows(request):
     # This view updates all shows in the database
@@ -234,13 +435,10 @@ def auto_update_all_database_shows():
         try:
             update_show_info(show)
         except Exception as e:
-            logger.info(f'Error updating show {show.trakt_id}: {e}')
+            logger.info(f'Error updating show {show.tvmaze_id}: {e}')
+        # Stay well below TVmaze's documented 20 requests / 10 seconds.
+        time.sleep(TVMAZE_REQUEST_INTERVAL)
     logger.info(f'Finish updating the database data for all shows.')
-
-# def update_database_view(request):
-#     logging.debug("Received request for update_database_view")
-#     auto_update_all_database_shows()
-#     return JsonResponse({'status': 'success'})
 
 @login_required
 def update_user_watchlist_shows(request):
@@ -248,136 +446,57 @@ def update_user_watchlist_shows(request):
     user_watchlist = Watchlist.objects.filter(user=user)
     for watchlist_item in user_watchlist:
         show = watchlist_item.show
-        update_show_info(show)
+        try:
+            update_show_info(show)
+        except Exception as e:
+            logger.info(f'Error updating show {show.tvmaze_id}: {e}')
+        time.sleep(TVMAZE_REQUEST_INTERVAL)
     return JsonResponse({"status": "success"})
 
 @login_required
-def add_show_to_watchlist(request, trakt_id):
-    # Search and get detail data from trakt API for selected show.
-    selected_show_data = get_show_details_from_trakt(trakt_id)
-    tmdb_id = selected_show_data['ids']['tmdb']    
-    images_url = get_show_images_from_tmdb(tmdb_id)
-    if images_url == None:
-        images_url ={'poster_url': None, 'poster_w780_url': None, 'backdrop_url': None}
-    # Get or create the Show object based on the Trakt ID
-    show, created = Show.objects.update_or_create(trakt_id=selected_show_data.get('ids').get('trakt'),
-        defaults={
-            'imdb_id': selected_show_data.get('ids', {}).get('imdb'),
-            'tmdb_id': selected_show_data.get('ids', {}).get('tmdb'),
+def add_show_to_watchlist(request, tvmaze_id):
+    # Get the details of the selected show from the TVmaze API.
+    selected_show_data = get_show_details_from_tvmaze(tvmaze_id)
+    if not selected_show_data:
+        messages.error(request, 'Could not load that show from TVmaze, please try again.')
+        return redirect('mytvtime:index')
+
+    # TVmaze sometimes holds duplicate entries for the same series, so prefer a
+    # row that is already tracked under the same IMDb id over adding a copy.
+    show = None
+    imdb_id = selected_show_data.get('imdb_id')
+    if imdb_id:
+        show = Show.objects.filter(imdb_id=imdb_id).first()
+
+    if show is None:
+        # Artwork comes from TMDB; the TVmaze image is only the fallback.
+        artwork = get_show_artwork(imdb_id=imdb_id,
+                                   title=selected_show_data.get('title'),
+                                   year=selected_show_data.get('year')) or {}
+        defaults = {
+            'imdb_id': imdb_id,
             'title': selected_show_data.get('title'),
-            'slug': selected_show_data.get('ids', {}).get('slug'),
+            'slug': selected_show_data.get('slug'),
             'year': selected_show_data.get('year'),
             'status': selected_show_data.get('status'),
             'overview': selected_show_data.get('overview'),
-            'trakt_updated_at': selected_show_data.get('updated_at'),
-            'poster_url': images_url.get('poster_url'),
-            'backdrop_url': images_url.get('backdrop_url')})
+            'tvmaze_updated_at': selected_show_data.get('updated_at'),
+            'poster_url': artwork.get('poster_url') or selected_show_data.get('poster_url'),
+            'backdrop_url': artwork.get('backdrop_url')}
+        if artwork.get('tmdb_id'):
+            defaults['tmdb_id'] = artwork['tmdb_id']
+        show, created = Show.objects.update_or_create(
+            tvmaze_id=selected_show_data.get('tvmaze_id'),
+            defaults=defaults)
+    else:
+        update_show_info(show)
+
     show.users.add(request.user)
     show.save()
-    next_episode_details = selected_show_data.get('next_episode')
-
-    if next_episode_details:
-        try:
-            next_episode, created = NextEpisode.objects.update_or_create(show=show,
-                defaults={
-                    'title': next_episode_details.get('title'),
-                    'season': next_episode_details.get('season'),
-                    'number': next_episode_details.get('number'),
-                    'air_date': parse_datetime(next_episode_details.get('first_aired')),
-                    'trakt_updated_at': parse_datetime(next_episode_details.get('updated_at'))})
-            next_episode.save()
-        except Exception as e:
-            logger.info(f'Error adding show_NextEpisode to Watchlist {show.slug}, id: {show.trakt_id}, error: {e}')
+    save_next_episode(show, selected_show_data.get('next_episode'))
     # Create a new Watchlist entry for the current user and the selected show
     Watchlist.objects.get_or_create(user=request.user, show=show)
     return redirect('mytvtime:index')
-
-# @login_required
-# def get_watching_shows(request):
-#     if request.user.is_authenticated:
-#         user_id = request.user.id
-#         watching_shows = []
-#         user_watchlist = Watchlist.objects.filter(user=user_id)
-#         for watchlist_item in user_watchlist:
-#             show = watchlist_item.show
-
-#             # Get the next episode if it exists
-#             next_episode = show.next_episode.first() if show.next_episode.exists() else None
-
-#             # If the next episode has aired, update the show and next episode details
-#             if next_episode and next_episode.air_date and next_episode.air_date < timezone.now():
-#                 show_details = get_show_details_from_trakt(show.trakt_id)
-#                 new_show_datailes = show_details
-#                 logger.info('找到过时的下一集时间show,并从trakt更新')
-#                 # Update the next episode info in the database
-#                 next_episode_details = show_details.get('next_episode')
-#                 if next_episode_details:
-#                     next_episode.title = next_episode_details.get('title')
-#                     next_episode.season = next_episode_details.get('season')
-#                     next_episode.number = next_episode_details.get('number')
-#                     next_episode.air_date = parse_datetime(next_episode_details.get('first_aired'))
-#                     next_episode.trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
-#                     # test_show_next_episode_trakt_updated_at = parse_datetime(next_episode_details.get('updated_at'))
-#                     next_episode.save()
-#                 # Get the updated next episode
-#                 next_episode = show.next_episode.first() if show.next_episode.exists() else None
-
-#             # Initialize watching_show dictionary
-#             watching_show = {
-#                 'title': show.title,
-#                 'trakt': show.trakt_id,
-#                 'imdb': show.imdb_id,
-#                 'tmdb': show.tmdb_id,
-#                 'slug': show.slug,
-#                 'season': next_episode.season if next_episode else None,
-#                 'episode': next_episode.number if next_episode else None,
-#                 'days': None,
-#                 'hours': None,
-#                 'minutes': None,
-#                 'status': 'Returning' if show.status == 'returning series' else show.status.capitalize(),
-#                 'poster_url': show.poster_url,
-#                 'backdrop_url': show.backdrop_url
-#             }
-
-#             # Calculate the days and hours until the next episode
-#             if next_episode and next_episode.air_date is not None:
-#                 next_episode_time = next_episode.air_date
-#                 now = timezone.now()  # get current time with timezone
-#                 time_delta = next_episode_time - now
-#                 days = time_delta.days
-#                 hours = time_delta.seconds // 3600
-#                 minutes = (time_delta.seconds // 60) % 60
-
-#                 # Update 'days' and 'hours' fields
-#                 watching_show['days'] = days
-#                 watching_show['hours'] = hours
-#                 watching_show['minutes'] = minutes
-#                 watching_show['trakt_next_episode_update_date'] = next_episode.trakt_updated_at
-#             watching_shows.append(watching_show)
-
-#         # Sort user's watchlist to front end.
-#         def sort_shows(show):
-#             """
-#             Custom sorting function for shows.
-#             Returning series are put at the front, ended shows are put at the end,
-#             and other shows are sorted by their next episode air time.
-#             """
-#             if show['status'].lower() == 'returning' and show['days'] is None:
-#                 return (1e10, show['title'])
-#             elif show['status'].lower() == 'ended':
-#                 return (2 * 1e10, show['title'])
-#             elif show['days'] is not None:
-#                 return ((show['days'] * 24 * 60 + show['hours'] * 60 + show['minutes']), show['title'])
-#             else:
-#                 return (2 * 1e10, show['title'])  # Other shows without a next episode are sorted to the end
-
-#         watching_shows = sorted(watching_shows, key=sort_shows)
-
-#         return JsonResponse({'watching_shows': watching_shows})
-
-#     else:
-#         # If the user is not authenticated, return a JSON object with an "unauthenticated" field.
-#         return JsonResponse({'unauthenticated': True}, safe=False)
 
 @login_required
 def get_watching_shows(request):
@@ -405,14 +524,14 @@ def get_watching_shows(request):
         # Prepare the data for a single show
         watching_show = {
             'title': show.title,
-            'trakt': show.trakt_id,
+            'tvmaze_id': show.tvmaze_id,
             'imdb': show.imdb_id,
             'tmdb': show.tmdb_id,
             'slug': show.slug,
             'season': next_episode.season if next_episode else None,
             'episode': next_episode.number if next_episode else None,
             'air_date': next_episode.air_date.isoformat() if next_episode and next_episode.air_date else None,
-            'next_episode_trakt_updated_at': next_episode.trakt_updated_at.isoformat() if next_episode and next_episode.trakt_updated_at else None,
+            'next_episode_tvmaze_updated_at': next_episode.tvmaze_updated_at.isoformat() if next_episode and next_episode.tvmaze_updated_at else None,
             'show_update_timestamp': show.timestamp.isoformat(),
             'next_episode_update_timestamp': next_episode.timestamp.isoformat() if next_episode and next_episode.timestamp else None,
             'status': 'Returning' if show.status == 'returning series' else show.status.capitalize(),
@@ -429,10 +548,10 @@ def get_watching_shows(request):
 def remove_show_from_watchlist(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        trakt_id = data.get('trakt_id', None)
-        if trakt_id is not None:
-            # Get the Show object based on the Trakt ID
-            show = get_object_or_404(Show, trakt_id=trakt_id)
+        tvmaze_id = data.get('tvmaze_id', None)
+        if tvmaze_id is not None:
+            # Get the Show object based on the TVmaze ID
+            show = get_object_or_404(Show, tvmaze_id=tvmaze_id)
             
             # Remove the user from the Show's users list
             show.users.remove(request.user)
@@ -447,6 +566,6 @@ def remove_show_from_watchlist(request):
             
             return JsonResponse({"status": "success"})
         else:
-            return JsonResponse({"status": "error", "message": "Trakt ID not provided"})
+            return JsonResponse({"status": "error", "message": "TVmaze ID not provided"})
     else:
         return JsonResponse({"status": "error", "message": "Invalid request method"})

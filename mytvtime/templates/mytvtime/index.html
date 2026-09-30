@@ -241,13 +241,13 @@
                         method: 'post',
                         url: '/remove_from_watchlist/',
                         data: {
-                            trakt_id: id
+                            tvmaze_id: id
                         },
                         headers: {"X-CSRFToken": csrftoken}
                     }).then(res => {
                         if (res.data.status === 'success') {
                             setWatchingShows(prevWatchingShows => {
-                                const newWatchingShows = prevWatchingShows.filter(show => show.trakt !== id);
+                                const newWatchingShows = prevWatchingShows.filter(show => show.tvmaze_id !== id);
                                 localStorage.setItem('watchingShowsData', JSON.stringify(newWatchingShows));
                                 return newWatchingShows;
                             });
@@ -309,17 +309,17 @@
                             <div className="watching-show-list-container">
                                 <ul className="watching-show-list">
                                     {watchingShows.map((show, index) =>
-                                        <li key={show.trakt} className={`watching-show-item fade-in ${touchActive === show.trakt ? 'touch-active' : ''}`}
+                                        <li key={show.tvmaze_id} className={`watching-show-item fade-in ${touchActive === show.tvmaze_id ? 'touch-active' : ''}`}
                                             style={{animationDelay: `${index * 0.1}s`}}
-                                            onClick={() => { handleItemClick(show.trakt); }} // Event handler for item click
+                                            onClick={() => { handleItemClick(show.tvmaze_id); }} // Event handler for item click
                                         >
                                             <div className="watching-show-list-item-background" style={{
                                                 backgroundImage: show.poster_url ? `url(${show.poster_url})` : 'none'}}>
                                             </div>
                                             <div className="watching-show-list-item-content">
-                                                <h2 className={showDetails === show.trakt ? 'visible' : 'hidden'}>{show.title}</h2>
+                                                <h2 className={showDetails === show.tvmaze_id ? 'visible' : 'hidden'}>{show.title}</h2>
                                                 {show.season != null && show.episode != null && (
-                                                    <div className={`show-season-air-date ${showDetails === show.trakt ? 'visible' : 'hidden'}`}>
+                                                    <div className={`show-season-air-date ${showDetails === show.tvmaze_id ? 'visible' : 'hidden'}`}>
                                                         <p>S{show.season} E{show.episode}</p>
                                                         {show.air_date && (
                                                             <p className="show-air-date">
@@ -340,16 +340,16 @@
                                                     </div>
                                                 )}
                                                 {show.season == null && show.episode == null && (
-                                                    <p className={`show-status ${showDetails === show.trakt ? 'visible' : 'hidden'}`}>{show.status}</p>
+                                                    <p className={`show-status ${showDetails === show.tvmaze_id ? 'visible' : 'hidden'}`}>{show.status}</p>
                                                 )}
                                                 {show.season == null && show.episode == null && (
-                                                    <i className={`far fa-clock no-air-date-icon ${showDetails === show.trakt ? 'hidden' : 'visible'}`}></i>
+                                                    <i className={`far fa-clock no-air-date-icon ${showDetails === show.tvmaze_id ? 'hidden' : 'visible'}`}></i>
                                                 )}
                                                 <button
-                                                    className={`delete-button ${showDelete === show.trakt ? 'visible' : 'hidden'}`} // Change visibility based on showDelete state
+                                                    className={`delete-button ${showDelete === show.tvmaze_id ? 'visible' : 'hidden'}`} // Change visibility based on showDelete state
                                                     onClick={(e) => {
                                                         e.stopPropagation(); // Stop the click event from bubbling to the parent element
-                                                        handleDelete(show.trakt);
+                                                        handleDelete(show.tvmaze_id);
                                                     }}
                                                 >
                                                     <i class="fas fa-trash"></i>

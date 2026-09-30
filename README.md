@@ -5,7 +5,7 @@
 [![Django](https://img.shields.io/badge/Django-4.2-green)](https://www.djangoproject.com/)
 [![React](https://img.shields.io/badge/React-18-lightblue)](https://reactjs.org/)
 
-My TV Time is a web application that allows users to search, track, and view detailed airing information for TV shows. It leverages powerful tools like Django, React, and external APIs like Trakt and TMDb to deliver a smooth, intuitive experience.
+My TV Time is a web application that allows users to search, track, and view detailed airing information for TV shows. It leverages powerful tools like Django, React, the TVmaze API (show data and air dates) and the TMDB API (posters and backdrops) to deliver a smooth, intuitive experience.
 
 ## ✨ Features
 
@@ -22,5 +22,5 @@ My TV Time is a web application that allows users to search, track, and view det
 
 ## 🎉 Acknowledgments
 
-- Trakt API
-- TMDB API
+- [TVmaze API](https://www.tvmaze.com/api) — show search, show details and next-episode air dates. No API key or OAuth required.
+- [TMDB API](https://developer.themoviedb.org/docs) — posters and backdrops.
